@@ -1208,6 +1208,18 @@
       ...opciones, headers: { Authorization: `Bearer ${s.token}`, Accept: "application/vnd.github+json", ...(opciones.headers || {}) },
     });
   }
+  /* Firma de los commits que hace la administración: nombre neutro y el email privado de GitHub
+     (id+usuario@users.noreply.github.com), para que nunca aparezca el nombre real del perfil. */
+  let firmaCache = null;
+  async function firmaNeutra(s) {
+    if (firmaCache) return firmaCache;
+    let email = `admin@${s.owner}.github.io`;
+    try {
+      const r = await fetch("https://api.github.com/user", { headers: { Authorization: `Bearer ${s.token}`, Accept: "application/vnd.github+json" } });
+      if (r.ok) { const u = await r.json(); if (u.id && u.login) email = `${u.id}+${u.login}@users.noreply.github.com`; }
+    } catch (e) { /* se usa el email genérico */ }
+    return firmaCache = { name: "Contraplano", email };
+  }
   async function guardarArchivo(s, nombre, obj, mensaje) {
     const contenido = JSON.stringify(obj, null, 2) + "\n";
     if (await hayApiLocal()) {
@@ -1219,7 +1231,8 @@
     const ruta = `contents/web/${nombre}`;
     const actual = await gh(s, ruta);
     const sha = actual.ok ? (await actual.json()).sha : undefined;
-    const r = await gh(s, ruta, { method: "PUT", body: JSON.stringify({ message: mensaje, content: textoB64(contenido), sha }) });
+    const firma = await firmaNeutra(s);
+    const r = await gh(s, ruta, { method: "PUT", body: JSON.stringify({ message: mensaje, content: textoB64(contenido), sha, author: firma, committer: firma }) });
     if (!r.ok) throw new Error(`GitHub respondió ${r.status}${r.status === 401 || r.status === 403 ? " (token sin permiso)" : ""}`);
     return "Guardado. La web publicada se actualiza en uno o dos minutos.";
   }
