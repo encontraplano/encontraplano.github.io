@@ -224,7 +224,7 @@
   const tip = $("tooltip");
   const VISTA_ESPANA = L.latLngBounds([35.8, -9.6], [43.9, 4.5]);
   const VISTA_CANARIAS = L.latLngBounds([27.6, -18.2], [29.5, -13.3]);
-  const mapa = L.map("mapa", { zoomSnap: 0.25, minZoom: 4, maxZoom: 18, scrollWheelZoom: true });
+  const mapa = L.map("mapa", { zoomSnap: 0.5, minZoom: 4, maxZoom: 18, scrollWheelZoom: true });
   mapa.fitBounds(VISTA_ESPANA);
   // la caja del mapa puede cambiar de tamaño al cargar la fuente o al cambiar de pestaña
   function reencuadrar() {
@@ -245,19 +245,22 @@
 
   const esOscuro = () => document.documentElement.dataset.theme === "dark" ||
     (document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
-  // Teselas de Esri: sin clave ni cabecera Referer, así que funcionan abriendo el HTML con doble clic.
-  const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services/";
+  /* Teselas grises de Esri: sin clave ni cabecera Referer, así que funcionan abriendo el HTML con doble
+     clic. El fondo se pide en alta resolución en pantallas de alta densidad (detectRetina); los nombres
+     van aparte, a tamaño normal, por encima de los colores de las comunidades para que se lean.
+     El zoom salta de medio en medio (zoomSnap 0.5): así las teselas nunca se amplían, solo se reducen,
+     y no se ven borrosas. */
+  const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/";
   const ATRIB = '&copy; <a href="https://www.esri.com/">Esri</a>, HERE, Garmin, <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
   let capaBase = null;
   function ponerTeselas() {
     if (capaBase) mapa.removeLayer(capaBase);
-    const op = { maxZoom: 19, maxNativeZoom: 18, attribution: ATRIB };
-    capaBase = esOscuro()
-      ? L.layerGroup([
-          L.tileLayer(ESRI + "Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", { ...op, maxNativeZoom: 16 }),
-          L.tileLayer(ESRI + "Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}", { ...op, maxNativeZoom: 16, pane: "etiquetas" }),
-        ])
-      : L.tileLayer(ESRI + "World_Street_Map/MapServer/tile/{z}/{y}/{x}", op);
+    const op = { maxZoom: 18, maxNativeZoom: 16, attribution: ATRIB };
+    const tono = esOscuro() ? "Dark" : "Light";
+    capaBase = L.layerGroup([
+      L.tileLayer(`${ESRI}World_${tono}_Gray_Base/MapServer/tile/{z}/{y}/{x}`, { ...op, detectRetina: true }),
+      L.tileLayer(`${ESRI}World_${tono}_Gray_Reference/MapServer/tile/{z}/{y}/{x}`, { ...op, pane: "etiquetas" }),
+    ]);
     capaBase.addTo(mapa);
   }
   ponerTeselas();
@@ -268,6 +271,7 @@
     const partes = [`<button data-nav="es">España</button>`];
     if (nav.ccaa) partes.push(nav.prov ? `<button data-nav="ccaa">${esc(nav.ccaa)}</button>` : `<span class="actual">${esc(nav.ccaa)}</span>`);
     if (nav.prov) partes.push(`<span class="actual">${esc(nav.prov)}</span>`);
+    clicCines();
     migas.innerHTML = partes.join(`<span class="sep">/</span>`) + (!nav.ccaa ? `<button data-nav="canarias" class="sec">Canarias</button>` : "");
     migas.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
       if (b.dataset.nav === "es") irEspana();
@@ -290,21 +294,43 @@
     pintarMigas(); pintarMapa();
   }
 
+  /* Nada flota encima del mapa: con ratón, lo que hay bajo el puntero se lee en una caja fija en la
+     esquina superior derecha; en el móvil no hay hover, así que tocar entra en la zona o abre el cine. */
+  const infoMapa = $("mapa-info");
+  const conRaton = matchMedia("(hover: hover) and (pointer: fine)").matches;
+  function conInfo(capa, html, alEntrar, alSalir) {
+    capa.on("mouseover", () => { if (!conRaton) return; infoMapa.innerHTML = html(); infoMapa.hidden = false; alEntrar?.(); });
+    capa.on("mouseout", () => { infoMapa.hidden = true; alSalir?.(); });
+  }
+  mapa.on("movestart", () => { infoMapa.hidden = true; });
+  // con toda España a la vista, los puntos de cine son diminutos y robarían el clic a las comunidades:
+  // solo se pueden tocar dentro de una comunidad o con zoom suficiente
+  function clicCines() { $("mapa").classList.toggle("cines-pasivos", !nav.ccaa && mapa.getZoom() < 8); }
+  mapa.on("zoomend", clicCines);
+  // la caja se aparta al lado contrario del puntero (con margen, para que no salte en el centro)
+  mapa.on("mousemove", e => {
+    const x = e.containerPoint.x / mapa.getSize().x;
+    if (x > 0.6) infoMapa.classList.add("izq"); else if (x < 0.4) infoMapa.classList.remove("izq");
+  });
+  const ficha = $("ficha-cine"), marcadores = new Map();
+  let fichaCi = null;
+
   let valsActuales = null, escalaActual = null, provActual = new Map();
   const capaCcaa = L.geoJSON(M.geo, {
     renderer: rCcaa, pane: "ccaa",
     style: f => estiloCcaa(f),
     onEachFeature: (f, capa) => {
-      capa.bindTooltip(() => tipCcaa(f), { sticky: true, className: "tt", direction: "top", offset: [0, -8] });
-      capa.on("click", () => { capa.closeTooltip(); entrarCcaa(f.properties.ccaa); });
+      conInfo(capa, () => tipCcaa(f), () => capa.setStyle({ weight: 2.2 }), () => capa.setStyle(estiloCcaa(f)));
+      capa.on("click", () => { infoMapa.hidden = true; entrarCcaa(f.properties.ccaa); });
     },
   }).addTo(mapa);
   const capaProv = L.geoJSON(null, {
     renderer: rProv, pane: "prov",
     style: f => estiloProv(f),
     onEachFeature: (f, capa) => {
-      capa.bindTooltip(() => tipProv(f), { sticky: true, className: "tt", direction: "top", offset: [0, -8] });
-      capa.on("click", () => { capa.closeTooltip(); entrarProv(f, capa); });
+      conInfo(capa, () => tipProv(f));
+      // dentro de la provincia, tocar el fondo (por ejemplo, al fallar un cine) no vuelve a encuadrar
+      capa.on("click", () => { if (nav.prov === f.properties.provincia) return; infoMapa.hidden = true; entrarProv(f, capa); });
     },
   }).addTo(mapa);
 
@@ -344,12 +370,18 @@
       <div class="fila"><span>Sesiones</span><span>${num(v.ses)}</span></div>
       ${v.conTaquilla ? `<div class="fila"><span>Recaudación</span><span>${eur(v.eur)}</span></div>` : ""}` :
       `<div class="fila"><span>Sin sesiones capturadas</span></div>`) +
-      `<div class="pista-clic">Pulsa para acercarte a sus cines</div>`;
+      (nav.prov === f.properties.provincia ? "" : `<div class="pista-clic">Pulsa para acercarte a sus cines</div>`);
   }
 
-  const capaOsm = L.layerGroup(M.cines.map(c => L.circleMarker([c[1], c[0]], {
-    renderer: rCines, radius: 3, weight: 0.6, color: css("--surface-1"), fillColor: css("--cine"), fillOpacity: 0.5,
-  }).bindTooltip(`<b>${esc(c[2])}</b>${c[3] ? `<div class="fila"><span>${esc(c[3])}</span></div>` : ""}${c[4] ? `<div class="fila"><span>Pantallas</span><span>${c[4]}</span></div>` : ""}`, { className: "tt" })));
+  // en pantallas táctiles los puntos son algo más grandes, para poder tocarlos con el dedo
+  const radioMin = conRaton ? 2.5 : 4.5;
+  const capaOsm = L.layerGroup(M.cines.map(c => {
+    const m = L.circleMarker([c[1], c[0]], {
+      renderer: rCines, radius: 3, weight: 0.6, color: css("--surface-1"), fillColor: css("--cine"), fillOpacity: 0.5,
+    });
+    conInfo(m, () => `<b>${esc(c[2])}</b>${c[3] ? `<div class="fila"><span>${esc(c[3])}</span></div>` : ""}${c[4] ? `<div class="fila"><span>Pantallas</span><span>${c[4]}</span></div>` : ""}`);
+    return m;
+  }));
   const capaCines = L.layerGroup().addTo(mapa);
 
   function maxDominio() {
@@ -488,7 +520,9 @@
     if (st.cines && !S) capaOsm.addTo(mapa); else capaOsm.remove();
     const leyenda = $("leyenda-cines"), ranking = $("tabla-cines"), pie = $("pie-cines");
     provActual = new Map();
+    marcadores.clear();
     if (!S) {
+      cerrarFicha();
       ranking.innerHTML = `<tbody><tr><td class="sec">${st.periodo === "acum" ? "El ranking de cines se calcula por fin de semana." : "No hay sesiones capturadas para este fin de semana. Se capturan cada viernes desde el 13 de noviembre de 2026."}</td></tr></tbody>`;
       pie.textContent = "";
       if (leyenda) leyenda.textContent = "";
@@ -504,15 +538,22 @@
       provActual.set(d.c[2], p);
     }
     capaProv.setStyle(estiloProv);
-    const radio = d3.scaleSqrt().domain([0, d3.max(datos, valor) || 1]).range([0, 14]);
+    // en el móvil, con toda España a la vista, puntos más pequeños para que no tapen las comunidades
+    const vistaGeneral = !conRaton && !nav.ccaa;
+    const radio = d3.scaleSqrt().domain([0, d3.max(datos, valor) || 1]).range([0, vistaGeneral ? 8 : 14]);
+    const radioMinimo = vistaGeneral ? 2 : radioMin;
     const color = css("--series-2"), borde = css("--surface-1");
     for (const d of datos.slice().reverse()) {
-      L.circleMarker([d.c[5], d.c[4]], {
-        renderer: rCines, radius: Math.max(2.5, radio(valor(d))), weight: 1, color: borde, fillColor: color, fillOpacity: 0.75,
-      }).bindTooltip(() => tipCine(d, est.conTaquilla), { className: "tt", direction: "top", offset: [0, -6] })
-        .bindPopup(() => popupCine(S, d.i), { maxWidth: 340, className: "pop", autoPanPaddingTopLeft: L.point(12, 60) })
-        .addTo(capaCines);
+      const m = L.circleMarker([d.c[5], d.c[4]], {
+        renderer: rCines, radius: Math.max(radioMinimo, radio(valor(d))), weight: 1, color: borde, fillColor: color, fillOpacity: 0.75,
+      });
+      conInfo(m, () => tipCine(d, est.conTaquilla));
+      m.on("click", () => { infoMapa.hidden = true; abrirFicha(S, d.i, true); });
+      m.addTo(capaCines);
+      marcadores.set(d.i, m);
     }
+    // si había un cine abierto, se actualiza con la película o el fin de semana nuevos
+    if (fichaCi != null) marcadores.has(fichaCi) ? abrirFicha(S, fichaCi, false) : cerrarFicha();
     if (leyenda) leyenda.innerHTML = `<span class="punto"></span>${num(datos.length)} cines, tamaño según ${est.conTaquilla ? (st.metrica === "eur" ? "recaudación" : "espectadores") : "sesiones y precio"}`;
     const enZona = d => (!nav.ccaa || d.c[3] === nav.ccaa) && (!nav.prov || d.c[2] === nav.prov);
     const lista = datos.filter(enZona);
@@ -522,9 +563,28 @@
     ranking.querySelectorAll("tr[data-ci]").forEach(tr => tr.addEventListener("click", () => {
       const c = S.cines[+tr.dataset.ci];
       mapa.setView([c[5], c[4]], 14);
-      capaCines.eachLayer(l => { const ll = l.getLatLng(); if (ll.lat === c[5] && ll.lng === c[4]) l.openPopup(); });
-      $("mapa").scrollIntoView({ behavior: "smooth", block: "center" });
+      abrirFicha(S, +tr.dataset.ci, false);
+      $("mapa").scrollIntoView({ behavior: "smooth", block: "start" });
     }));
+  }
+
+  // ficha del cine: debajo del mapa, nunca encima
+  function abrirFicha(S, ci, desplazar) {
+    fichaCi = ci;
+    ficha.innerHTML = `<button class="btn btn-icono cerrar" aria-label="Cerrar la ficha del cine"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>` + popupCine(S, ci);
+    ficha.querySelector(".cerrar").addEventListener("click", cerrarFicha);
+    ficha.hidden = false;
+    resaltarCine();
+    if (desplazar) {
+      const r = ficha.getBoundingClientRect();
+      if (r.top > innerHeight - 120) ficha.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+  function cerrarFicha() { fichaCi = null; ficha.hidden = true; ficha.innerHTML = ""; resaltarCine(); }
+  function resaltarCine() {
+    const borde = css("--surface-1"), sel = css("--text-primary");
+    marcadores.forEach((m, ci) => m.setStyle(ci === fichaCi ? { weight: 2.5, color: sel } : { weight: 1, color: borde }));
+    marcadores.get(fichaCi)?.bringToFront();
   }
   function tipCine(d, conTaquilla) {
     const c = d.c, r = d.r;

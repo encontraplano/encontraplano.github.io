@@ -156,6 +156,7 @@ main { max-width: 1440px; margin: 0 auto; padding: 20px 24px 40px; }
 #mapa { width: 100%; height: 500px; border-radius: var(--radio-s); background: var(--surface-2); z-index: 0; border: 1px solid var(--border); }
 #mapa .leaflet-interactive { cursor: pointer; }
 #mapa path.leaflet-interactive:focus { outline: none; }
+#mapa.cines-pasivos .leaflet-cines-pane .leaflet-interactive { pointer-events: none; }
 .leaflet-container { font: inherit; }
 .leaflet-tooltip.tt, .pop .leaflet-popup-content-wrapper, .pop .leaflet-popup-tip {
   background: var(--surface-1); color: var(--text-primary); border: 1px solid var(--border); box-shadow: 0 6px 24px rgba(0,0,0,.14);
@@ -166,10 +167,17 @@ main { max-width: 1440px; margin: 0 auto; padding: 20px 24px 40px; }
 .fila { display: flex; justify-content: space-between; gap: 16px; color: var(--text-secondary); font-size: 12.5px; }
 .fila span:last-child { color: var(--text-primary); font-weight: 500; }
 .pista-clic { margin-top: 6px; font-size: 11.5px; color: var(--text-muted); }
-.pop .leaflet-popup-content-wrapper { border-radius: var(--radio); }
-.pop .leaflet-popup-content { margin: 14px 16px; font-size: 12.5px; line-height: 1.45; width: 300px !important; }
-.pop a.leaflet-popup-close-button { color: var(--text-muted); top: 6px; right: 6px; }
-.pop-cine h4 { font-size: 14px; padding-right: 18px; }
+.mapa-info {
+  position: absolute; top: 10px; right: 10px; z-index: 500; pointer-events: none; width: 240px; max-width: calc(100% - 20px);
+  background: var(--surface-1); color: var(--text-primary); border: 1px solid var(--border); border-radius: var(--radio-s);
+  padding: 8px 10px; font-size: 12.5px; box-shadow: var(--sombra);
+}
+.mapa-info b { display: block; margin-bottom: 4px; }
+.mapa-info.izq { right: auto; left: 54px; top: 50px; }
+.ficha-cine { position: relative; margin-top: 12px; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radio-s); background: var(--surface-2); font-size: 12.5px; line-height: 1.45; }
+.ficha-cine .cerrar { position: absolute; top: 8px; right: 8px; }
+.ficha-cine .tabla-scroll { max-height: 260px; }
+.pop-cine h4 { font-size: 14px; padding-right: 36px; }
 .pop-cine .sub { color: var(--text-secondary); margin: 2px 0 10px; }
 .pop-cine .destacado { background: var(--surface-2); border-radius: var(--radio-s); padding: 8px 10px; margin-bottom: 10px; }
 .pop-cine .destacado b { display: block; margin-bottom: 2px; }
@@ -205,7 +213,7 @@ main { max-width: 1440px; margin: 0 auto; padding: 20px 24px 40px; }
 .leyenda > #leyenda-cines:only-child { margin-top: 0; }
 .tiempo { display: flex; gap: 12px; align-items: center; margin-top: 12px; }
 .tiempo input[type=range] { flex: 1; accent-color: var(--accent); min-height: 0; padding: 0; border: 0; background: none; min-width: 80px; }
-.slider-etq { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
+.slider-etq { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 6px; align-items: center; font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
 .desplegable { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
 .desplegable summary { cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-secondary); list-style: none; display: flex; align-items: center; gap: 6px; }
 .desplegable summary::-webkit-details-marker { display: none; }
