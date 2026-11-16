@@ -1,7 +1,8 @@
 # Descarga los datos en la nube y publica la web en GitHub Pages.
 # Martes: taquilla del fin de semana. Viernes: sesiones de los cines + taquilla.
 # También se lanza a mano: pestaña Actions, o el botón de la administración de la web.
-# Cuando la administración guarda config.json o admin.json solo se republica la web (sin descargar datos).
+# Cuando cambia algo en web/ (código, o config.json y admin.json desde la administración)
+# solo se republica la web, sin descargar datos.
 name: actualizar
 
 on:
@@ -11,7 +12,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["web/config.json", "web/admin.json"]
+    paths: ["web/**"]
 
 permissions:
   contents: write
