@@ -826,6 +826,11 @@
     Chart.defaults.borderColor = bc;
     Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
     Chart.defaults.font.size = 12;
+    // deja aire entre la leyenda y el gráfico, para que ninguna barra o etiqueta la toque
+    if (!Chart.registry.plugins.get("margenLeyenda")) Chart.register({
+      id: "margenLeyenda",
+      beforeInit(c) { const l = c.legend; if (!l) return; const fit = l.fit; l.fit = function () { fit.call(this); this.height += 16; }; },
+    });
     return {
       responsive: true, maintainAspectRatio: false, animation: false,
       interaction: { mode: "index", intersect: false },
@@ -833,7 +838,7 @@
         legend: { position: "top", align: "start", labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, pointStyle: "rectRounded", padding: 14 } },
         tooltip: { backgroundColor: css("--surface-1"), titleColor: css("--text-primary"), bodyColor: css("--text-secondary"), borderColor: bc, borderWidth: 1, padding: 10, cornerRadius: 8, boxPadding: 4 },
       },
-      scales: { x: { grid: { display: false }, border: { display: false } }, y: { beginAtZero: true, grid: { color: bc }, border: { display: false }, ticks: { callback: v => eurCorto(v), maxTicksLimit: 6 } } },
+      scales: { x: { grid: { display: false }, border: { display: false }, ticks: { maxRotation: 0, autoSkipPadding: 10 } }, y: { beginAtZero: true, grid: { color: bc }, border: { display: false }, ticks: { callback: v => eurCorto(v), maxTicksLimit: 6 } } },
     };
   }
   function pintarGraficos() {
@@ -845,7 +850,7 @@
       gSem = new Chart($("g-semanal"), {
         type: "bar",
         data: { labels: D.fines.map((_, i) => fechaFin(i)), datasets: [{ label: "Top 25", data: porFin.map(rs => rs.reduce((s, r) => s + (r[FE] || 0), 0)), backgroundColor: s1, borderRadius: 3 }] },
-        options: { ...comunes, plugins: { ...comunes.plugins, legend: { display: false }, tooltip: { ...comunes.plugins.tooltip, callbacks: { label: c => eur(c.parsed.y) } } }, scales: { ...comunes.scales, x: { ...comunes.scales.x, ticks: { maxTicksLimit: 8 } } } },
+        options: { ...comunes, plugins: { ...comunes.plugins, legend: { display: false }, tooltip: { ...comunes.plugins.tooltip, callbacks: { label: c => eur(c.parsed.y) } } }, scales: { ...comunes.scales, x: { ...comunes.scales.x, ticks: { ...comunes.scales.x.ticks, maxTicksLimit: 8 } } } },
       });
     } else {
       const rs = porPeli[seleccion];
