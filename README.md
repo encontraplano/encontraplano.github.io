@@ -34,7 +34,7 @@ Web para estudiar si una película funciona en taquilla, con datos públicos que
 
 Una contraseña olvidada no se recupera: se crea un acceso nuevo con un token nuevo y se revoca el anterior en GitHub. En local, actualizar los datos no pide contraseña, porque el servidor solo escucha en tu PC.
 
-En los tres casos la web funciona igual. Además, la tarea programada de Windows «Taquilla Espana - actualizar» se ejecuta los martes a las 11:00 y los viernes a las 12:00. Actualización manual: `actualizar.bat`.
+En los tres casos la web funciona igual. Los datos se actualizan solos en GitHub Actions los martes y los viernes. Para descargarlos en tu PC sin publicar nada, usa `actualizar.bat`.
 
 ## Publicar sin exponer tu cuenta
 
@@ -89,7 +89,7 @@ A partir de ahí, `.github/workflows/actualizar.yml` actualiza los datos en la n
 - `scripts/ingesta.py`: taquilla, fichas, críticas, estrenos, métricas y generación de la web.
 - `scripts/sesiones.py`: sesiones por cine. Si se corta, continúa donde lo dejó.
 - `scripts/servidor.py`: servidor local con el botón de actualizar. Solo escucha en tu PC.
-- `scripts/tarea.py` y `scripts/programar_tarea.ps1`: tarea programada de Windows.
+- `scripts/tarea.py` y `scripts/programar_tarea.ps1`: tarea programada de Windows. No está activa porque las actualizaciones se hacen en GitHub.
 - `.github/workflows/actualizar.yml`: actualización y publicación en GitHub.
 - `data/peliculas.csv` y `data/taquilla_fines_de_semana.csv`: los datos para Excel (separador `;`).
 - `data/cache/`: HTML ya descargado. No se sube a GitHub.
