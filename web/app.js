@@ -155,6 +155,37 @@
   };
   const inBuscar = $("buscar");
   inBuscar.addEventListener("change", () => { const i = buscarPeli(inBuscar.value); if (i != null) { elegir(i); irVista("explorar"); } });
+
+  /* Campos con lista (películas, directores): al tocarlos se vacían para que salga la lista entera
+     y se pueda escribir sin borrar antes; el nombre actual queda de placeholder. Si se sale sin
+     elegir ni escribir nada, vuelve el nombre de antes. Escape también lo deja como estaba. */
+  const conLista = e => e.target instanceof HTMLInputElement && e.target.hasAttribute("list") ? e.target : null;
+  document.addEventListener("focusin", e => {
+    const inp = conLista(e); if (!inp) return;
+    inp.dataset.tocado = "";
+    if (!inp.value) return;
+    inp.dataset.antes = inp.value;
+    if (inp.dataset.ph == null) inp.dataset.ph = inp.placeholder;
+    inp.placeholder = inp.value;
+    inp.value = "";
+  });
+  document.addEventListener("input", e => { const inp = conLista(e); if (inp) inp.dataset.tocado = "1"; });
+  document.addEventListener("focusout", e => {
+    const inp = conLista(e); if (!inp) return;
+    const antes = inp.dataset.antes;
+    if (inp.dataset.ph != null) { inp.placeholder = inp.dataset.ph; delete inp.dataset.ph; }
+    delete inp.dataset.antes;
+    if (antes == null) return;
+    if (!inp.dataset.tocado) inp.value = antes;                       // no tocó nada: se queda como estaba
+    else if (!inp.value) inp.dispatchEvent(new Event("change"));      // lo dejó vacío a propósito
+    else if (inp.getAttribute("list") === "lista-pelis" && buscarPeli(inp.value) == null) inp.value = antes;  // texto que no es ninguna película
+  });
+  document.addEventListener("keydown", e => {
+    const inp = conLista(e); if (!inp || e.key !== "Escape") return;
+    inp.dataset.tocado = ""; inp.blur();
+  });
+  // al elegir una opción, se cierra el teclado en el móvil
+  document.addEventListener("change", e => { const inp = conLista(e); if (inp && inp.value && document.activeElement === inp) inp.blur(); });
   $("btn-todas").addEventListener("click", () => { elegir(-1); irVista("explorar"); });
   $("ir-inicio").addEventListener("click", ev => { ev.preventDefault(); elegir(-1); irVista("explorar"); });
 
