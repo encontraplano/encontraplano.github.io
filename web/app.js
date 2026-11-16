@@ -1203,7 +1203,8 @@
 
   // GitHub: guardar un archivo del repositorio (crea o reemplaza)
   async function gh(s, ruta, opciones = {}) {
-    return fetch(`https://api.github.com/repos/${s.owner}/${s.repo}/${ruta}`, {
+    // sin barra final: con ella GitHub rechaza la comprobación CORS y el navegador da «Failed to fetch»
+    return fetch(`https://api.github.com/repos/${s.owner}/${s.repo}${ruta ? "/" + ruta : ""}`, {
       ...opciones, headers: { Authorization: `Bearer ${s.token}`, Accept: "application/vnd.github+json", ...(opciones.headers || {}) },
     });
   }
