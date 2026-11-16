@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taquilla España</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111'/%3E%3Cpath d='M9 21V11h3v10zm5.5 0V8h3v13zm5.5 0v-6h3v6z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="style.css?v=20">
+</head>
+<body>
+<header class="barra">
+  <div class="barra-in">
+    <a class="marca" href="#" id="ir-inicio">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><path d="M9 21V11h3v10zm5.5 0V8h3v13zm5.5 0v-6h3v6z"/></svg>
+      <span>Taquilla España</span>
+    </a>
+    <nav class="pestanas" role="tablist" aria-label="Secciones">
+      <button role="tab" data-vista="explorar">Explorar</button>
+      <button role="tab" data-vista="peliculas">Películas</button>
+      <button role="tab" data-vista="calendario">Calendario</button>
+      <button role="tab" data-vista="cadenas">Cadenas</button>
+      <button role="tab" data-vista="cara">Cara a cara</button>
+    </nav>
+    <div class="acciones">
+      <label class="buscador">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+        <input id="buscar" list="lista-pelis" placeholder="Buscar película" autocomplete="off" aria-label="Buscar película">
+      </label>
+      <datalist id="lista-pelis"></datalist>
+      <button id="btn-todas" class="btn">Top del finde</button>
+      <button id="btn-dev" class="btn btn-icono" aria-label="Administración" title="Administración">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.5 7.5 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.5 7.5 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1A7.5 7.5 0 0 0 9.6 19l.4 2.5h4l.4-2.5a7.5 7.5 0 0 0 2.6-1.5l2.4 1 2-3.4z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <p id="aviso" class="aviso" role="status" hidden></p>
+  <!-- ======================================================= EXPLORAR -->
+  <section class="vista rejilla" data-vista="explorar">
+    <div class="col">
+    <article class="tarjeta mapa-tarjeta">
+      <header class="cab">
+        <h2>Mapa <span class="etq">estimado</span></h2>
+        <div id="mapa-resumen" class="cab-dato"></div>
+      </header>
+      <div class="controles">
+        <div class="seg" role="radiogroup" aria-label="Métrica">
+          <button data-metrica="eur" class="activo">Recaudación</button>
+          <button data-metrica="espect">Espectadores</button>
+        </div>
+        <div class="seg" role="radiogroup" aria-label="Periodo">
+          <button data-periodo="fin" class="activo">Fin de semana</button>
+          <button data-periodo="acum">Acumulado</button>
+        </div>
+        <select id="dia" aria-label="Día">
+          <option value="todo">Vie a dom</option>
+          <option value="v">Viernes</option>
+          <option value="s">Sábado</option>
+          <option value="d">Domingo</option>
+        </select>
+        <label class="check"><input type="checkbox" id="ver-cines"> Cines</label>
+      </div>
+      <div class="mapa-caja">
+        <div id="mapa" role="region" aria-label="Mapa de España: pulsa una comunidad para ver sus provincias y cines"></div>
+        <nav id="migas" class="migas" aria-label="Zona del mapa"></nav>
+        <div id="leyenda" class="leyenda"></div>
+      </div>
+      <div class="tiempo">
+        <button id="play" class="btn btn-icono" aria-label="Reproducir"></button>
+        <input type="range" id="slider" min="0" max="0" value="0" aria-label="Fin de semana">
+        <span id="slider-etq" class="slider-etq"></span>
+      </div>
+      <details class="desplegable">
+        <summary>Tabla por comunidad</summary>
+        <div class="tabla-scroll corta"><table id="tabla-ccaa"></table></div>
+      </details>
+      <details class="desplegable">
+        <summary>Ranking de cines</summary>
+        <div class="tabla-scroll corta"><table id="tabla-cines"></table></div>
+        <p class="pie-tabla" id="pie-cines"></p>
+      </details>
+    </article>
+    <article class="tarjeta" id="resenas" aria-label="Críticas"></article>
+    </div>
+
+    <article class="tarjeta panel" id="panel" aria-label="Ficha de la película"></article>
+
+    <article class="tarjeta ancho">
+      <header class="cab">
+        <h2>Evolución</h2>
+        <div class="comparar">
+          <input id="cmp1" list="lista-pelis" placeholder="Comparar con…" autocomplete="off" aria-label="Comparar con la película 2">
+          <input id="cmp2" list="lista-pelis" placeholder="Y con…" autocomplete="off" aria-label="Comparar con la película 3">
+        </div>
+      </header>
+      <div class="graficos">
+        <figure>
+          <figcaption>Recaudación por semana</figcaption>
+          <div class="lienzo"><canvas id="g-semanal"></canvas></div>
+        </figure>
+        <figure>
+          <figcaption>Acumulado desde el estreno</figcaption>
+          <div class="lienzo"><canvas id="g-acum"></canvas></div>
+        </figure>
+      </div>
+    </article>
+
+    <article class="tarjeta ancho plegable" id="caja-proximos">
+      <button class="cab cab-boton" id="toggle-proximos" aria-expanded="false" aria-controls="proximos">
+        <h2>Próximos estrenos <span class="contador" id="n-proximos"></span></h2>
+        <span class="cab-dato" id="resumen-proximos"></span>
+        <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div id="proximos" class="proximos" hidden></div>
+    </article>
+  </section>
+
+  <!-- ======================================================= PELÍCULAS -->
+  <section class="vista" data-vista="peliculas" hidden>
+    <article class="tarjeta">
+      <header class="cab">
+        <h2>Películas <span class="contador" id="n-lista"></span></h2>
+      </header>
+      <div class="filtros">
+        <label class="campo ancho-2"><span>Buscar</span><input id="f-texto" placeholder="Título, distribuidora o género"></label>
+        <label class="campo ancho-2"><span>Director</span><input id="f-director" list="lista-directores" placeholder="Cualquiera" autocomplete="off"></label>
+        <datalist id="lista-directores"></datalist>
+        <label class="campo"><span>Año</span><select id="f-anio"><option value="">Todos</option></select></label>
+        <label class="campo"><span>Origen</span><select id="f-origen"><option value="">Todos</option><option value="es">Españolas</option><option value="ext">Extranjeras</option></select></label>
+        <label class="check"><input type="checkbox" id="f-completas" checked> Solo estrenos dentro del histórico</label>
+      </div>
+      <div id="director-resumen"></div>
+      <div class="tabla-scroll alta"><table id="tabla-pelis" class="tabla-pelis"></table></div>
+    </article>
+  </section>
+
+  <!-- ======================================================= CALENDARIO -->
+  <section class="vista" data-vista="calendario" hidden>
+    <article class="tarjeta">
+      <header class="cab">
+        <h2>Calendario de competencia</h2>
+        <div class="leyenda-linea"><span class="muestra estreno"></span>Estrenos <span class="muestra resto"></span>Resto del top 25</div>
+      </header>
+      <div id="calendario" class="calendario"></div>
+    </article>
+  </section>
+
+  <!-- ======================================================= CADENAS -->
+  <section class="vista" data-vista="cadenas" hidden>
+    <article class="tarjeta">
+      <header class="cab">
+        <h2>Cadenas de cines <span class="etq">estimado</span></h2>
+        <div class="controles sin-margen">
+          <select id="cad-fin" aria-label="Fin de semana"></select>
+          <label class="check"><input type="checkbox" id="cad-solo"> Solo la película seleccionada</label>
+        </div>
+      </header>
+      <div id="cadenas"></div>
+    </article>
+  </section>
+
+  <!-- ======================================================= CARA A CARA -->
+  <section class="vista" data-vista="cara" hidden>
+    <article class="tarjeta">
+      <header class="cab">
+        <h2>Cara a cara</h2>
+        <div class="comparar">
+          <input id="cc-a" list="lista-pelis" placeholder="Película A" autocomplete="off" aria-label="Película A">
+          <span class="vs">vs</span>
+          <input id="cc-b" list="lista-pelis" placeholder="Película B" autocomplete="off" aria-label="Película B">
+        </div>
+      </header>
+      <div id="cara"></div>
+      <div class="graficos" id="cara-graficos">
+        <figure>
+          <figcaption>Acumulado desde el estreno</figcaption>
+          <div class="lienzo"><canvas id="cc-g-acum"></canvas></div>
+        </figure>
+        <figure>
+          <figcaption>Recaudación por fin de semana</figcaption>
+          <div class="lienzo"><canvas id="cc-g-sem"></canvas></div>
+        </figure>
+      </div>
+    </article>
+  </section>
+
+  <footer class="pie">
+    <p><b>Fuentes</b>
+      Taquilla, fichas, críticas, sesiones y estrenos: <a href="https://www.ecartelera.com/taquilla/espana/" target="_blank" rel="noopener">eCartelera</a> (datos de comScore).
+      Peso por comunidad, precio medio y reparto por día: ICAA, Estadística de Cinematografía 2025.
+      Cartografía: Esri y colaboradores de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>.</p>
+    <p><b>Qué es estimado</b>
+      Las cifras nacionales por película y fin de semana son reales. Las de comunidad, provincia, cine y cadena son estimaciones: reparten la taquilla nacional con el peso de cada comunidad y, dentro de ella, con las sesiones y el precio de cada cine. La recaudación entre semana se deduce de los totales acumulados.</p>
+  </footer>
+</main>
+
+<dialog id="dev" class="dialogo" aria-labelledby="dev-titulo">
+  <form method="dialog" class="dialogo-cab">
+    <h2 id="dev-titulo">Administración</h2>
+    <button class="btn btn-icono" aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </form>
+  <div id="dev-cuerpo"></div>
+</dialog>
+
+<div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js" integrity="sha512-vc58qvvBdrDR4etbxMdlTt4GBQk1qjvyORR2nrsPsFPyrs+/u5c3+1Ct6upOgdZoIl7eq6k3a1UPDSNAQi/32A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="data/mapa.js"></script>
+<script src="data/datos.js"></script>
+<script src="app.js?v=21"></script>
+</body>
+</html>

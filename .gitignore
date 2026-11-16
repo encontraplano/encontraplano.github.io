@@ -1,0 +1,6 @@
+data/cache/
+data/*.log
+data/*_log.txt
+__pycache__/
+*.pyc
+.claude/
