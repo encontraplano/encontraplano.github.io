@@ -45,7 +45,7 @@ SEMANAL = RAIZ / "data" / "icaa_top25.csv"
 ESTADO = RAIZ / "data" / "icaa_pdfs.json"
 EMPAREJADO = RAIZ / "data" / "icaa_emparejado.csv"
 CONTRASTE = RAIZ / "data" / "contraste_fuentes.csv"
-VERSION_LECTOR = 1  # súbelo si cambia la lectura de los PDF: se vuelven a procesar todos
+VERSION_LECTOR = 2  # súbelo si cambia la lectura de los PDF: se vuelven a procesar todos
 
 MES3 = {"ene": 1, "feb": 2, "mar": 3, "abr": 4, "may": 5, "jun": 6, "jul": 7, "ago": 8,
         "sep": 9, "set": 9, "oct": 10, "nov": 11, "dic": 12}
@@ -325,8 +325,24 @@ def leer_pdf(pdf_bytes):
         f.setdefault("cines", None)
         f.pop("pantallas", None)
     out["filas"] = crudas
+    out["avisos"] = _corregir_filas(out)
     out["error"] = _validar(out)
     return out
+
+
+def _corregir_filas(r):
+    """Datos raros dentro de un PDF que cuadra: se marcan, no tiran el fin de semana entero.
+    Los mismos errores aparecen en eCartelera (vienen de la fuente), así que no son fallos de lectura."""
+    avisos = []
+    for f in r["filas"]:
+        e, p = f["recaudacion_eur"], f["espectadores"]
+        if p and not (1.5 <= e / p <= 45):
+            # la recaudación cuadra con el TOTAL; lo dudoso son los espectadores
+            avisos.append(f"puesto {f['puesto']}: {p} espectadores para {e} €; se dejan en blanco")
+            f["espectadores"] = None
+        if f["acumulado_eur"] is not None and f["acumulado_eur"] < e:
+            avisos.append(f"puesto {f['puesto']}: acumulado ({f['acumulado_eur']}) menor que el fin de semana ({e}), como en la fuente")
+    return avisos
 
 
 def _repartir_texto(filas, cab):
@@ -379,12 +395,8 @@ def _validar(r):
         return "puestos no consecutivos"
     if any(not f["titulo"] for f in filas):
         return "filas sin título"
-    for f in filas:
-        e, p = f["recaudacion_eur"], f["espectadores"]
-        if p and not (1.5 <= e / p <= 45):
-            return f"precio medio imposible en el puesto {f['puesto']} ({e} € / {p})"
-        if f["acumulado_eur"] is not None and f["acumulado_eur"] < e:
-            return f"acumulado menor que el fin de semana en el puesto {f['puesto']}"
+    if not r["total"] and len(r.get("avisos") or []) > 2:
+        return "sin fila TOTAL con la que comprobar y con datos raros"
     if r["total"] and len(filas) >= 20:
         suma = sum(f["recaudacion_eur"] for f in filas)
         if abs(suma - r["total"]["fin_eur"]) > max(5, 0.002 * r["total"]["fin_eur"]):
@@ -410,6 +422,8 @@ def listar_pdfs(descargar):
         href, texto = html.unescape(m.group(1)), limpiar(m.group(2))
         nombre = href.rsplit("/", 1)[-1].lower()
         if not (re.match(r"top-?25", nombre) or re.match(r"top\s*25", texto, re.I)):
+            continue
+        if nombre.startswith("topesp"):  # «Cine español en cartelera» enlazado por error como top 25
             continue
         url = urljoin(PAGINA, href)
         if url in vistos:
@@ -471,6 +485,9 @@ def actualizar(descargar, desde, hoy):
             r["error"] = _validar(r)
         v = r["fecha"][0].isoformat() if r["fecha"] else None
         estado[p["url"]] = {"viernes": v, "archivo": p["nombre"], "filas": len(r["filas"]), "error": r["error"]}
+        if r.get("avisos") and not r["error"]:
+            estado[p["url"]]["avisos"] = r["avisos"]
+            print(f"  · ICAA {p['nombre']}: " + "; ".join(r["avisos"]))
         if r["error"]:
             print(f"  ! ICAA {p['nombre']}: {r['error']} (no se usa)")
             continue

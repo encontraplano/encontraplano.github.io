@@ -77,6 +77,8 @@ El ICAA publica el **jueves** la taquilla del fin de semana anterior.
 | Viernes 11:00 UTC | Revisión completa: taquilla, fichas, críticas, estrenos y sesiones de los cines |
 | Sábado 10:23 UTC | Solo si todavía falta el fin de semana pasado en el ICAA; si no, termina sin hacer nada |
 
+Un push a `main` solo republica la web, salvo que el mensaje del commit lleve `[datos]`: entonces también descarga los datos.
+
 ## Fuentes y qué es estimado
 
 | Dato | Fuente | Granularidad |

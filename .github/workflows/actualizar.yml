@@ -5,7 +5,7 @@
 #   sábado:  solo si todavía falta la taquilla del ICAA del fin de semana pasado; si no, no hace nada.
 # También se lanza a mano: pestaña Actions, o el botón de la administración de la web.
 # Cuando cambia algo en web/ (código, o config.json y admin.json desde la administración)
-# solo se republica la web, sin descargar datos.
+# solo se republica la web, sin descargar datos; salvo que el mensaje del commit lleve [datos].
 name: actualizar
 
 on:
@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["web/**"]
+    paths: ["web/**", "scripts/**", ".github/workflows/actualizar.yml"]
 
 permissions:
   contents: write
@@ -37,43 +37,49 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
-        if: github.event_name != 'push'
         with:
           python-version: "3.12"
 
-      # el sábado solo se trabaja si el jueves y el viernes no consiguieron la taquilla del ICAA
+      # seguir: publicar la web. datos: descargar datos.
+      # El sábado solo se trabaja si el jueves y el viernes no consiguieron la taquilla del ICAA.
       - name: ¿Hay algo que hacer?
         id: plan
+        env:
+          MENSAJE: ${{ github.event.head_commit.message }}
         run: |
           if [ "${{ github.event.schedule }}" = "23 10 * * 6" ]; then
             python -I scripts/icaa.py --comprobar
-            if grep -q "falta=true" "$GITHUB_OUTPUT"; then echo "seguir=true" >> "$GITHUB_OUTPUT"; else echo "seguir=false" >> "$GITHUB_OUTPUT"; fi
-          else
+            if grep -q "falta=true" "$GITHUB_OUTPUT"; then echo "seguir=true" >> "$GITHUB_OUTPUT"; echo "datos=true" >> "$GITHUB_OUTPUT"
+            else echo "seguir=false" >> "$GITHUB_OUTPUT"; echo "datos=false" >> "$GITHUB_OUTPUT"; fi
+          elif [ "${{ github.event_name }}" = "push" ]; then
             echo "seguir=true" >> "$GITHUB_OUTPUT"
+            case "$MENSAJE" in *"[datos]"*) echo "datos=true" >> "$GITHUB_OUTPUT";; *) echo "datos=false" >> "$GITHUB_OUTPUT";; esac
+          else
+            echo "seguir=true" >> "$GITHUB_OUTPUT"; echo "datos=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Lector de PDF (para el ICAA)
-        if: github.event_name != 'push' && steps.plan.outputs.seguir == 'true'
+        if: steps.plan.outputs.datos == 'true'
         run: pip install "pdfplumber>=0.11,<0.12"
 
       # caché de páginas y PDF ya descargados: evita volver a pedir el histórico en cada ejecución
       - uses: actions/cache@v4
-        if: github.event_name != 'push' && steps.plan.outputs.seguir == 'true'
+        if: steps.plan.outputs.datos == 'true'
         with:
           path: data/cache
           key: cache-${{ github.run_id }}
           restore-keys: cache-
 
       - name: Sesiones de los cines (solo de viernes a domingo)
-        if: github.event_name != 'push' && steps.plan.outputs.seguir == 'true'
+        if: steps.plan.outputs.datos == 'true'
         run: python -I scripts/sesiones.py
 
       - name: Taquilla (ICAA y eCartelera), fichas, críticas y estrenos
-        if: github.event_name != 'push' && steps.plan.outputs.seguir == 'true'
+        if: steps.plan.outputs.datos == 'true'
         run: python -I scripts/ingesta.py
 
       - name: Guardar los datos en el repositorio
-        if: github.event_name != 'push' && steps.plan.outputs.seguir == 'true'
+        if: steps.plan.outputs.datos == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
