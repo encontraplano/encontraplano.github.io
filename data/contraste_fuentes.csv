@@ -183,6 +183,8 @@
 2020-07-17;superagente-makey;Superagente Makey;cines;282;333
 2020-07-17;scooby;¡Scooby!;espectadores;42391;426564
 2020-07-17;scooby;¡Scooby!;cines;267;344
+2020-07-17;madre-oscura;Madre oscura (Wretched, The);espectadores;13972;87437
+2020-07-17;madre-oscura;Madre oscura (Wretched, The);cines;192;246
 2020-07-17;the-peanut-butter-falcon;Familia que tu eliges, La;espectadores;9931;49116
 2020-07-17;red-shoes-and-the-7-dwarfs;Zapatos rojos y los siete Trolls;espectadores;6827;424188
 2020-07-17;red-shoes-and-the-7-dwarfs;Zapatos rojos y los siete Trolls;cines;212;275
@@ -208,6 +210,8 @@
 2020-07-24;scooby;¡Scooby!;espectadores;31955;840797
 2020-07-24;scooby;¡Scooby!;cines;265;315
 2020-07-24;voces;Voces;espectadores;13301;82518
+2020-07-24;madre-oscura;Madre oscura (Wretched, The);espectadores;8202;220879
+2020-07-24;madre-oscura;Madre oscura (Wretched, The);cines;184;223
 2020-07-24;the-peanut-butter-falcon;Familia que tu eliges, La;espectadores;7060;135288
 2020-07-24;the-peanut-butter-falcon;Familia que tu eliges, La;cines;167;196
 2020-07-24;red-shoes-and-the-7-dwarfs;Zapatos rojos y los siete Trolls;espectadores;5373;494179
@@ -228,6 +232,8 @@
 2020-07-31;voces;Voces;espectadores;11381;247011
 2020-07-31;dreambuilders-2020;Mina y el mundo de los sueños;espectadores;9540;56421
 2020-07-31;dreambuilders-2020;Mina y el mundo de los sueños;cines;205;258
+2020-07-31;madre-oscura;Madre oscura (Wretched, The);espectadores;4737;298970
+2020-07-31;madre-oscura;Madre oscura (Wretched, The);cines;173;191
 2020-07-31;the-peanut-butter-falcon;Familia que tu eliges, La;espectadores;4336;195021
 2020-07-31;the-peanut-butter-falcon;Familia que tu eliges, La;cines;150;176
 2020-07-31;the-gentlemen;Gentlemen, The. Los señores de la mafia;espectadores;2312;2
@@ -267,6 +273,7 @@
 2020-08-07;papicha;Papicha, sueños de libertad;cines;70;78
 2020-08-07;color-out-of-space;Color out of Space, The;espectadores;2875;18022
 2020-08-07;color-out-of-space;Color out of Space, The;cines;52;54
+2020-08-07;madre-oscura;Madre oscura (Wretched, The);espectadores;2247;0
 2020-08-07;the-peanut-butter-falcon;Familia que tu eliges, La;espectadores;1542;0
 2020-08-07;the-gentlemen;Gentlemen, The. Los señores de la mafia;espectadores;1455;0
 2020-08-07;red-shoes-and-the-7-dwarfs;Zapatos rojos y los siete Trolls;espectadores;1428;0
@@ -594,6 +601,7 @@
 2020-12-11;the-turning-2020;Otra vuelta de tuerca;espectadores;10268;69194
 2020-12-11;el-jinete-del-dragon;Jinete del dragon, El;espectadores;9186;217587
 2020-12-11;el-jinete-del-dragon;Jinete del dragon, El;cines;220;270
+2020-12-11;akira;Akira 4K (re);espectadores;4870;33670
 2020-12-11;radioactive;Madame Curie;espectadores;4459;121859
 2020-12-11;radioactive;Madame Curie;cines;89;112
 2020-12-11;come-away;Erase una vez;espectadores;4887;262176
@@ -635,6 +643,7 @@
 2020-12-18;sentimental;Sentimental;espectadores;1341;0
 2020-12-18;la-primera-navidad;Primera Navidad, La;espectadores;1240;0
 2020-12-18;josep;Josep;espectadores;1087;0
+2020-12-18;akira;Akira 4K (re);espectadores;1054;0
 2020-12-18;ons-2019;Ons;espectadores;1043;0
 2020-12-18;para-toda-la-vida;Para toda la vida;espectadores;846;0
 2020-12-25;crood-2;Croods : Una nueva era, Los;espectadores;140867;1
@@ -744,6 +753,8 @@
 2021-02-05;persian-lessons;Profesor de persa, El;cines;92;116
 2021-02-05;el-padre;Padre, El;espectadores;5872;718748
 2021-02-05;el-padre;Padre, El;cines;74;85
+2021-02-05;el-chico;Chico, El (100 años);espectadores;6766;34777
+2021-02-05;el-chico;Chico, El (100 años);cines;82;118
 2021-02-05;wonder-woman-1984;Wonder Woman 1984;espectadores;4164;3
 2021-02-05;wonder-woman-1984;Wonder Woman 1984;cines;73;81
 2021-02-05;hasta-el-cielo;Hasta el cielo;espectadores;4103;1
@@ -758,9 +769,11 @@
 2021-02-05;deseando-amar;Deseando Amar (re);espectadores;1540;0
 2021-02-05;sentimental;Sentimental;espectadores;1527;0
 2021-02-05;the-comeback-trail;Ultima gran estafa, La;espectadores;1361;0
+2021-02-05;2046-pelicula;2046(re);espectadores;1349;0
 2021-02-05;mi-nina;Mi niña;espectadores;1440;0
 2021-02-05;lupin-iii-the-first;Lupin III: The First;espectadores;1284;0
 2021-02-05;la-boda-de-rosa;Boda de Rosa, La;espectadores;1157;0
+2021-02-05;crash-1996;Crash (4K);espectadores;1026;0
 2021-02-05;ane-2020;Ane;espectadores;849;0
 2021-02-12;crood-2;Croods : Una nueva era, Los;espectadores;9029;3
 2021-02-12;la-chica-del-brazalete;Chica del brazalete, La;espectadores;7167;48619
@@ -777,11 +790,14 @@
 2021-02-12;el-padre;Padre, El;cines;66;79
 2021-02-12;mrs-lowry-son;Sra. Lowry e hijo;espectadores;3344;21726
 2021-02-12;mrs-lowry-son;Sra. Lowry e hijo;cines;75;98
+2021-02-12;el-chico;Chico, El (100 años);espectadores;3244;66609
+2021-02-12;el-chico;Chico, El (100 años);cines;89;125
 2021-02-12;unhinged-es-;Salvaje;espectadores;2267;0
 2021-02-12;the-elfkins;Elfkins;espectadores;2227;0
 2021-02-12;las-ninas-2020;Niñas, Las;espectadores;1876;0
 2021-02-12;the-comeback-trail;Ultima gran estafa, La;espectadores;1513;0
 2021-02-12;anton-su-amigo-y-la-revolucion-rusa;Anton, su amigo y la Revolucion Rusa;espectadores;1454;0
+2021-02-12;2046-pelicula;2046 (2004) (re);espectadores;1013;0
 2021-02-12;deseando-amar;Deseando Amar (2000) (re);espectadores;928;0
 2021-02-12;sentimental;Sentimental;espectadores;976;0
 2021-02-12;el-inconveniente;Inconveniente, El;espectadores;693;0
@@ -807,6 +823,7 @@
 2021-02-19;the-elfkins;Elfkins;espectadores;2507;0
 2021-02-19;unhinged-es-;Salvaje;espectadores;1965;0
 2021-02-19;las-ninas-2020;Niñas, Las;espectadores;1264;0
+2021-02-19;el-chico;Chico, El (100 años);espectadores;1513;0
 2021-02-19;the-comeback-trail;Ultima gran estafa, La;espectadores;1133;0
 2021-02-19;mrs-lowry-son;Sra. Lowry e hijo;espectadores;1179;0
 2021-02-19;anton-su-amigo-y-la-revolucion-rusa;Anton, su amigo y la Revolucion Rusa;espectadores;910;0
@@ -896,6 +913,7 @@
 2021-03-19;the-elfkins;Elfkins;espectadores;3083;0
 2021-03-19;only-the-animals;Solo las bestias;espectadores;2065;0
 2021-03-19;el-jinete-del-dragon;Jinete del dragon, El;espectadores;1805;0
+2021-03-19;et-el-extraterrestre;E.T. El Extraterrestre 35º aniversario (1982) (re: 2017);espectadores;1711;0
 2021-03-26;godzilla-vs-kong;Godzilla vs Kong;espectadores;221135;1
 2021-03-26;godzilla-vs-kong;Godzilla vs Kong;cines;291;426
 2021-03-26;tom-and-jerry;Tom y Jerry;espectadores;67868;431338
@@ -988,6 +1006,8 @@
 2021-04-16;raya-and-the-last-dragon;Raya y el ultimo dragon;espectadores;9203;1
 2021-04-16;raya-and-the-last-dragon;Raya y el ultimo dragon;cines;121;137
 2021-04-16;una-veterinaria-en-la-borgona;Una veterinaria en la Borgoña;espectadores;7869;49009
+2021-04-23;guardianes-noche-tren-infinito;Guardianes de la noche -Kimetsu no Yaiba- La Película: Tren Infinito;espectadores;90443;552824
+2021-04-23;guardianes-noche-tren-infinito;Guardianes de la noche -Kimetsu no Yaiba- La Película: Tren Infinito;cines;202;517
 2021-04-23;mortal-kombat-reboot;Mortal Kombat;espectadores;41844;891187
 2021-04-23;mortal-kombat-reboot;Mortal Kombat;cines;302;404
 2021-04-23;godzilla-vs-kong;Godzilla vs Kong;espectadores;35234;5
@@ -1011,6 +1031,8 @@
 2021-04-30;nomadland;Nomadland;cines;249;271
 2021-04-30;chaos-walking;Chaos Walking;espectadores;31717;203066
 2021-04-30;chaos-walking;Chaos Walking;cines;285;347
+2021-04-30;guardianes-noche-tren-infinito;Guardianes de la noche -Kimetsu no Yaiba- La Película: Tren Infinito;espectadores;28975;874133
+2021-04-30;guardianes-noche-tren-infinito;Guardianes de la noche -Kimetsu no Yaiba- La Película: Tren Infinito;cines;239;388
 2021-04-30;godzilla-vs-kong;Godzilla vs Kong;espectadores;24377;5
 2021-04-30;godzilla-vs-kong;Godzilla vs Kong;cines;256;265
 2021-04-30;promising-young-woman;Una joven prometedora;espectadores;22546;775307
@@ -1046,6 +1068,8 @@
 2021-05-07;godzilla-vs-kong;Godzilla vs Kong;cines;224;229
 2021-05-07;promising-young-woman;Una joven prometedora;espectadores;10385;916947
 2021-05-07;promising-young-woman;Una joven prometedora;cines;226;234
+2021-05-07;guardianes-noche-tren-infinito;Guardianes de la noche -Kimetsu no Yaiba- La Película: Tren Infinito;espectadores;10183;988788
+2021-05-07;guardianes-noche-tren-infinito;Guardianes de la noche -Kimetsu no Yaiba- La Película: Tren Infinito;cines;227;269
 2021-05-14;el-senor-de-los-anillos-el-retorno-del-rey;Señor de los anillos: El retorno del rey, El (re:2021);espectadores;52574;289511
 2021-05-14;el-senor-de-los-anillos-el-retorno-del-rey;Señor de los anillos: El retorno del rey, El (re:2021);cines;263;273
 2021-05-14;el-olvido-que-seremos;Olvido que seremos, El;espectadores;18181;364798
@@ -1260,6 +1284,7 @@
 2021-07-23;un-lugar-tranquilo-2;Un lugar tranquilo 2;espectadores;1919;0
 2021-07-23;wild-mountain-thyme;Una cancion irlandesa;espectadores;1582;0
 2021-07-23;apariencias-2020;Apariencias, Las;espectadores;1480;0
+2021-07-23;summer-of-soul;Summer of Soul (...Or, When the Revolution Could Not Be Televised);espectadores;1086;0
 2021-07-23;mujer-que-escapo;Mujer que escapo, La;espectadores;1094;0
 2021-07-23;las-cosas-que-decimos-las-cosas-que-hacemos;Cosas que decimos, las cosas que hacemos, Las;espectadores;909;0
 2021-07-30;old-2021;Tiempo;espectadores;160319;1
@@ -1286,6 +1311,7 @@
 2021-07-30;cruella-de-vil;Cruella;espectadores;2979;0
 2021-07-30;wrong-turn-sendero-al-infierno;Wrong Turn. Sendero al infierno;espectadores;1503;0
 2021-07-30;el-cover;Cover, El;espectadores;1236;0
+2021-07-30;summer-of-soul;Summer of Soul (...Or, When the Revolution Could Not Be Televised);espectadores;1005;0
 2021-07-30;un-lugar-tranquilo-2;Un lugar tranquilo 2;espectadores;911;0
 2021-07-30;wild-mountain-thyme;Una cancion irlandesa;espectadores;936;0
 2021-07-30;apariencias-2020;Apariencias, Las;espectadores;857;0
@@ -1703,6 +1729,7 @@
 2021-12-03;tengamos-la-fiesta-en-paz;Tengamos la fiesta en Paz;cines;105;133
 2021-12-03;el-amor-en-su-lugar;Amor en su lugar, El;espectadores;11093;0
 2021-12-03;venom-2;Venom 2: Habra matanza;espectadores;6619;0
+2021-12-03;matrix;Matrix, The (1999) (re);espectadores;6379;0
 2021-12-03;la-hija-2021;Hija, La;espectadores;5833;0
 2021-12-03;pan-de-limon-con-semillas-de-amapola;Pan de limón con semillas de amapola;espectadores;5656;0
 2021-12-03;el-refugio;Refugio, El;espectadores;4577;0
@@ -1752,6 +1779,7 @@
 2021-12-17;el-lodo;Lodo, El;espectadores;2188;0
 2021-12-17;tres-pisos;Tres pisos;espectadores;1879;0
 2021-12-17;resident-evil-reboot;Resident Evil: Bienvenidos a Raccoon City;espectadores;1794;0
+2021-12-17;seis-dias-corrientes;Sis dies corrents;espectadores;1450;0
 2021-12-17;la-vida-era-eso;Vida era eso, La;espectadores;1515;0
 2021-12-17;pan-de-limon-con-semillas-de-amapola;Pan de limón con semillas de amapola;espectadores;1505;0
 2021-12-24;spider-man-3-2021;Spider-Man: No Way Home;espectadores;368500;15
@@ -2002,6 +2030,7 @@
 2022-02-25;encanto;Encanto;espectadores;9325;0
 2022-02-25;las-ilusiones-perdidas;Ilusiones perdidas, Las;espectadores;6222;0
 2022-02-25;el-triunfo-the-big-hit;Triunfo, El;espectadores;5968;0
+2022-02-25;el-padrino;Padrino: 50 Aniversario, El;espectadores;5629;0
 2022-02-25;moonfall;Moonfall;espectadores;3980;0
 2022-02-25;primeavera-en-beechwood;Primavera en Beechwood;espectadores;3525;0
 2022-02-25;mama-o-papa-2020;Mama o Papa;espectadores;3621;0
@@ -2514,6 +2543,7 @@
 2022-07-22;men;Men;cines;202;266
 2022-07-22;lightyear;Lightyear;espectadores;8053;0
 2022-07-22;alta-costura;Alta costura;espectadores;5780;0
+2022-07-22;la-princesa-mononoke;Princesa Mononoke (1997) (re:2022);espectadores;5985;0
 2022-07-22;entre-la-vida-y-la-muerte;Entre la vida y la muerte;espectadores;3175;0
 2022-07-22;lunana;Lunana, un yak en la escuela;espectadores;2934;0
 2022-07-22;llenos-gracia;Llenos de gracia;espectadores;2981;0
@@ -2548,6 +2578,7 @@
 2022-07-29;vortex;Vortex;espectadores;1709;0
 2022-07-29;fractura-2021;Fractura, La;espectadores;1938;0
 2022-07-29;llenos-gracia;Llenos de gracia;espectadores;1801;0
+2022-07-29;la-princesa-mononoke;Princesa Mononoke (1997) (re:2022);espectadores;1556;0
 2022-08-05;bullet-train;Bullet Train;espectadores;198560;1
 2022-08-05;bullet-train;Bullet Train;cines;408;838
 2022-08-05;padre-no-hay-mas-que-uno-3;Padre no hay mas que uno 3;espectadores;98550;11
@@ -2774,6 +2805,9 @@
 2022-09-23;crimenes-futuro-2022;Crimenes del futuro;espectadores;4449;0
 2022-09-23;voy-a-paarmelo-bien;Voy a pasarmelo bien;espectadores;5100;0
 2022-09-23;el-acusado;Acusado, El;espectadores;3943;0
+2022-09-23;el-grito-silencioso;Grito silencioso, El. El caso Roe v. Wade;espectadores;3592;0
+2022-09-30;avatar;Avatar (2009) (re);espectadores;132384;988927
+2022-09-30;avatar;Avatar (2009) (re);cines;290;475
 2022-09-30;smile-2022;Smile;espectadores;82164;565208
 2022-09-30;tadeo-jones-3-la-tabla-esmeralda;Tadeo Jones 3. La tabla esmeralda;espectadores;73415;9
 2022-09-30;tadeo-jones-3-la-tabla-esmeralda;Tadeo Jones 3. La tabla esmeralda;cines;363;383
@@ -2805,6 +2839,8 @@
 2022-10-07;smile-2022;Smile;espectadores;122852;2
 2022-10-07;renglones-torcidos-dios;Renglones torcidos de Dios, Los;espectadores;119209;1
 2022-10-07;renglones-torcidos-dios;Renglones torcidos de Dios, Los;cines;354;425
+2022-10-07;avatar;Avatar (2009) (re);espectadores;76023;2
+2022-10-07;avatar;Avatar (2009) (re);cines;280;440
 2022-10-07;tadeo-jones-3-la-tabla-esmeralda;Tadeo Jones 3. La tabla esmeralda;espectadores;61512;25135
 2022-10-07;tadeo-jones-3-la-tabla-esmeralda;Tadeo Jones 3. La tabla esmeralda;acumulado;10177666;25135
 2022-10-07;tadeo-jones-3-la-tabla-esmeralda;Tadeo Jones 3. La tabla esmeralda;semana;7;1
@@ -3103,6 +3139,8 @@
 2022-12-23;el-gato-con-botas-2;Gato con botas, El: El ultimo deseo;espectadores;86049;936235
 2022-12-23;el-gato-con-botas-2;Gato con botas, El: El ultimo deseo;cines;362;599
 2022-12-23;a-todo-tren-2;A todo tren 2;espectadores;33906;3
+2022-12-23;i-wanna-dance-with-somebody;Whitney Houston: I Wanna Dance with Somebody;espectadores;14600;147000
+2022-12-23;i-wanna-dance-with-somebody;Whitney Houston: I Wanna Dance with Somebody;cines;334;364
 2022-12-23;as-bestas;As bestas;espectadores;12518;3
 2022-12-23;as-bestas;As bestas;cines;194;272
 2022-12-23;el-menu;Menu, El;espectadores;6565;1
@@ -3133,6 +3171,8 @@
 2022-12-30;as-bestas;As bestas;espectadores;10805;3
 2022-12-30;as-bestas;As bestas;cines;148;200
 2022-12-30;inspector-sun-y-la-maldicion-de-la-viuda-negra;Inspector Sun y la maldición de la viuda negra;espectadores;8301;115885
+2022-12-30;i-wanna-dance-with-somebody;Whitney Houston: I Wanna Dance with Somebody;espectadores;6454;342853
+2022-12-30;i-wanna-dance-with-somebody;Whitney Houston: I Wanna Dance with Somebody;cines;312;323
 2022-12-30;al-descubierto;Al descubierto;espectadores;6103;76617
 2022-12-30;todos-lo-hacen;Todos lo hacen;espectadores;5302;69635
 2022-12-30;el-menu;Menu, El;espectadores;3758;0
@@ -3161,6 +3201,7 @@
 2023-01-06;as-bestas;As bestas;cines;135;163
 2023-01-06;living;Living;espectadores;16974;147288
 2023-01-06;inspector-sun-y-la-maldicion-de-la-viuda-negra;Inspector Sun y la maldición de la viuda negra;espectadores;10061;271151
+2023-01-06;i-wanna-dance-with-somebody;Whitney Houston: I Wanna Dance with Somebody;espectadores;5209;0
 2023-01-06;aftersun;Aftersun;espectadores;4527;0
 2023-01-06;al-descubierto;Al descubierto;espectadores;4337;0
 2023-01-06;el-menu;Menu, El;espectadores;3673;0
@@ -3192,6 +3233,7 @@
 2023-01-13;emily;Emily;espectadores;5960;0
 2023-01-13;aftersun;Aftersun;espectadores;5032;0
 2023-01-13;el-menu;Menu, El;espectadores;2667;0
+2023-01-13;i-wanna-dance-with-somebody;Whitney Houston: I Wanna Dance with Somebody;espectadores;3400;0
 2023-01-13;el-falsificador-de-pasaportes;Falsificador de pasaportes, El;espectadores;2725;0
 2023-01-13;el-suplente;Suplente, El;espectadores;1944;0
 2023-01-13;el-despertar-de-maria;Despertar de Maria, El;espectadores;1571;0
@@ -3221,6 +3263,7 @@
 2023-01-27;el-gato-con-botas-2;Gato con botas, El: El ultimo deseo;espectadores;108803;8
 2023-01-27;el-gato-con-botas-2;Gato con botas, El: El ultimo deseo;cines;328;527
 2023-01-27;babylon-2021;Babylon;espectadores;62824;1
+2023-01-27;la-ballena;Ballena, La (The Whale);espectadores;57345;412099
 2023-01-27;m3gan;M3gan;espectadores;43483;3
 2023-01-27;el-asombroso-mauricio;Asombroso Mauricio, El;espectadores;39229;524296
 2023-01-27;el-asombroso-mauricio;Asombroso Mauricio, El;cines;306;457
@@ -3244,11 +3287,13 @@
 2023-02-03;avatar-2;Avatar: El Sentido del Agua;cines;316;912
 2023-02-03;llaman-a-la-puerta;Llaman a la puerta;cines;323;354
 2023-02-03;el-gato-con-botas-2;Gato con botas, El: El ultimo deseo;cines;325;523
+2023-02-03;la-ballena;Ballena, La (The Whale);cines;267;398
 2023-02-03;almas-en-pena-de-inisherin;Almas en pena de Inisherin;cines;179;199
 2023-02-03;el-asombroso-mauricio;Asombroso Mauricio, El;cines;311;430
 2023-02-03;los-hijos-de-otro;Hijos de otros, Los;espectadores;639;0
 2023-02-10;avatar-2;Avatar: El Sentido del Agua;espectadores;88692;47
 2023-02-10;avatar-2;Avatar: El Sentido del Agua;cines;292;655
+2023-02-10;titanic;Titanic 25 Aniversario;espectadores;57179;461824
 2023-02-10;el-gato-con-botas-2;Gato con botas, El: El ultimo deseo;espectadores;68199;9
 2023-02-10;el-gato-con-botas-2;Gato con botas, El: El ultimo deseo;cines;306;443
 2023-02-10;the-fabelmans;Fabelman, Los;espectadores;62535;436958
@@ -3261,6 +3306,7 @@
 2023-02-10;as-bestas;As bestas;espectadores;26742;4
 2023-02-10;asterix-y-obelix-el-reino-medio;Asterix y Obelix y el reino medio;espectadores;28064;491748
 2023-02-10;asterix-y-obelix-el-reino-medio;Asterix y Obelix y el reino medio;cines;314;389
+2023-02-10;la-ballena;Ballena, La (The Whale);espectadores;25363;1
 2023-02-10;almas-en-pena-de-inisherin;Almas en pena de Inisherin;espectadores;22841;0
 2023-02-10;babylon-2021;Babylon;espectadores;16695;0
 2023-02-10;el-asombroso-mauricio;Asombroso Mauricio, El;espectadores;14243;0
@@ -3281,9 +3327,11 @@
 2023-02-17;la-nina-de-la-comunion;Niña de la comunion, La;espectadores;36586;865547
 2023-02-17;the-fabelmans;Fabelman, Los;espectadores;36701;875865
 2023-02-17;el-triangulo-de-la-tristeza;Triangulo de la tristeza, El;espectadores;30194;225829
+2023-02-17;titanic;Titanic 25 Aniversario;espectadores;23039;907543
 2023-02-17;el-piloto;Piloto, El;espectadores;23142;587436
 2023-02-17;el-piloto;Piloto, El;cines;250;340
 2023-02-17;llaman-a-la-puerta;Llaman a la puerta;espectadores;12176;1
+2023-02-17;la-ballena;Ballena, La (The Whale);espectadores;11691;0
 2023-02-17;asterix-y-obelix-el-reino-medio;Asterix y Obelix: El reino medio;espectadores;12607;0
 2023-02-17;almas-en-pena-de-inisherin;Almas en pena de Inisherin;espectadores;9834;0
 2023-02-17;el-asombroso-mauricio;Asombroso Mauricio, El;espectadores;8579;0
@@ -3313,8 +3361,10 @@
 2023-02-24;el-triangulo-de-la-tristeza;Triangulo de la tristeza, El;cines;177;195
 2023-02-24;terrifier-2;Terrifier 2;espectadores;17112;0
 2023-02-24;el-piloto;Piloto, El;espectadores;15067;0
+2023-02-24;titanic;Titanic 25 Aniversario;espectadores;15637;0
 2023-02-24;the-quiet-girl;Quiet Girl, The;espectadores;11217;0
 2023-02-24;el-cielo-no-puede-esperar;Cielo no puede esperar, El;espectadores;9933;0
+2023-02-24;la-ballena;Ballena, La (The Whale);espectadores;8496;0
 2023-02-24;till-el-crimen-que-lo-cambio-todo;Till - El crimen que lo cambio todo;espectadores;8125;0
 2023-02-24;almas-en-pena-de-inisherin;Almas en pena de Inisherin;espectadores;6587;0
 2023-02-24;asterix-y-obelix-el-reino-medio;Asterix y Obelix: El reino medio;espectadores;5867;0
@@ -3328,6 +3378,7 @@
 2023-03-03;avatar-2;Avatar: El Sentido del Agua;cines;239;321
 2023-03-03;avatar-2;Avatar: El Sentido del Agua;semana;12;11
 2023-03-03;as-bestas;As bestas;espectadores;44575;6
+2023-03-03;father-of-the-milky-way-railroad;Guardianes de la noche: Rumbo a la aldea de los Herreros;espectadores;34840;344000
 2023-03-03;el-gato-con-botas-2;Gato con botas, El: El ultimo deseo;espectadores;27578;10
 2023-03-03;el-gato-con-botas-2;Gato con botas, El: El ultimo deseo;cines;264;307
 2023-03-03;irati;Irati;espectadores;25980;508464
@@ -3343,6 +3394,7 @@
 2023-03-03;the-quiet-girl;Quiet Girl, The;espectadores;10078;0
 2023-03-03;terrifier-2;Terrifier 2;espectadores;9243;0
 2023-03-03;el-piloto;Piloto, El;espectadores;7907;0
+2023-03-03;la-ballena;Ballena, La (The Whale);espectadores;6720;0
 2023-03-03;el-cielo-no-puede-esperar;Cielo no puede esperar, El;espectadores;6445;0
 2023-03-03;almas-en-pena-de-inisherin;Almas en pena de Inisherin;espectadores;5142;0
 2023-03-10;creed-3;Creed III;espectadores;128681;3
@@ -3364,12 +3416,14 @@
 2023-03-10;el-gato-con-botas-2;Gato con botas, El: El ultimo deseo;cines;233;272
 2023-03-10;irati;Irati;espectadores;15255;700982
 2023-03-10;irati;Irati;cines;106;139
+2023-03-10;father-of-the-milky-way-railroad;Guardianes de la noche: Rumbo a la aldea de los Herreros;espectadores;12215;0
 2023-03-10;violeta-el-hada-traviesa;Violeta, el hada traviesa;espectadores;13326;0
 2023-03-10;el-triangulo-de-la-tristeza;Triangulo de la tristeza, El;espectadores;10673;0
 2023-03-10;the-quiet-girl;Quiet Girl, The;espectadores;7122;0
 2023-03-10;king-mi-pequeno-rey;KING, mi pequeño rey;espectadores;7009;0
 2023-03-10;el-caftan-azul;Caftan azul, El;espectadores;6497;0
 2023-03-10;la-nina-de-la-comunion;Niña de la comunion, La;espectadores;5063;0
+2023-03-10;la-ballena;Ballena, La (The Whale);espectadores;5004;0
 2023-03-10;el-hijo-2023;Hijo, El;espectadores;4465;0
 2023-03-10;todo-a-la-vez-en-todas-partes;Todo a la vez en todas partes;espectadores;4736;0
 2023-03-17;maridos;Mari(dos);espectadores;93371;1
@@ -3391,6 +3445,7 @@
 2023-03-17;as-bestas;As bestas;cines;178;216
 2023-03-17;el-gato-con-botas-2;Gato con botas, El: El ultimo deseo;espectadores;13217;0
 2023-03-17;bajo-terapia;Bajo terapia;espectadores;10019;0
+2023-03-17;la-ballena;Ballena, La (The Whale);espectadores;7687;0
 2023-03-17;irati;Irati;espectadores;8025;0
 2023-03-17;the-fabelmans;Fabelman, Los;espectadores;7070;0
 2023-03-17;violeta-el-hada-traviesa;Violeta, el hada traviesa;espectadores;7936;0
@@ -3401,6 +3456,7 @@
 2023-03-24;john-wick-4;John Wick 4;espectadores;166575;123507
 2023-03-24;john-wick-4;John Wick 4;acumulado;1235075;123507
 2023-03-24;john-wick-4;John Wick 4;cines;356;640
+2023-03-24;el-hotel-de-los-lios-gyg;Hotel de los lios. Garcia y Garcia 2, El;espectadores;78892;510125
 2023-03-24;maridos;Mari(dos);espectadores;67345;2
 2023-03-24;maridos;Mari(dos);cines;337;373
 2023-03-24;65;65;espectadores;61185;430000
@@ -3423,6 +3479,7 @@
 2023-03-24;as-bestas;As bestas;espectadores;5674;0
 2023-03-24;bajo-terapia;Bajo terapia;espectadores;5486;0
 2023-03-24;ant-man-y-la-avispa-quantumania;Ant-Man y la Avispa: Quantumanía;espectadores;5400;0
+2023-03-24;la-ballena;Ballena, La (The Whale);espectadores;4643;0
 2023-03-24;cronica-de-un-amor-efimero;Cronica de un amor efimero;espectadores;4916;0
 2023-03-24;cronica-de-un-amor-efimero;Cronica de un amor efimero;acumulado;34854;34388
 2023-03-24;el-extrano-2023;Extraño, El;espectadores;4630;0
@@ -3430,6 +3487,7 @@
 2023-03-31;dragones-y-mazmorras-2021;Dungeons & Dragons: Honor entre ladrones;cines;343;531
 2023-03-31;john-wick-4;John Wick 4;espectadores;96519;2
 2023-03-31;john-wick-4;John Wick 4;cines;322;606
+2023-03-31;el-hotel-de-los-lios-gyg;Hotel de los lios. Garcia y Garcia 2, El;espectadores;71197;1
 2023-03-31;maridos;Mari(dos);espectadores;51482;3
 2023-03-31;maridos;Mari(dos);cines;323;350
 2023-03-31;oso-vicioso;Oso vicioso;espectadores;40610;294530
@@ -3463,6 +3521,7 @@
 2023-04-07;john-wick-4;John Wick 4;cines;303;481
 2023-04-07;air-2023;Air;espectadores;57364;626210
 2023-04-07;air-2023;Air;cines;291;300
+2023-04-07;el-hotel-de-los-lios-gyg;Hotel de los lios. Garcia y Garcia 2, El;espectadores;41782;1
 2023-04-07;maridos;Mari(dos);espectadores;36132;3
 2023-04-07;oso-vicioso;Oso vicioso;espectadores;17781;608393
 2023-04-07;momias;Momias;espectadores;15254;5
@@ -3492,6 +3551,7 @@
 2023-04-14;john-wick-4;John Wick 4;cines;263;386
 2023-04-14;maravilloso-desastre;Maravilloso desastre;espectadores;27121;189645
 2023-04-14;maravilloso-desastre;Maravilloso desastre;cines;291;395
+2023-04-14;el-hotel-de-los-lios-gyg;Hotel de los lios. Garcia y Garcia 2, El;espectadores;25891;2
 2023-04-14;renfield;Renfield;espectadores;22820;154863
 2023-04-14;maridos;Mari(dos);espectadores;18217;0
 2023-04-14;conspiracion-en-el-cairo;Conspiracion en el Cairo;espectadores;8833;0
@@ -3500,6 +3560,7 @@
 2023-04-14;avatar-2;Avatar: El Sentido del Agua;espectadores;3435;0
 2023-04-14;el-inocente-2022;Inocente, El;espectadores;4195;0
 2023-04-14;novembre;Novembre;espectadores;3923;0
+2023-04-14;scarlet-l-envol;Scarlet;espectadores;3730;0
 2023-04-14;empieza-el-baile;Empieza el baile;espectadores;3264;0
 2023-04-14;el-imperio-de-la-luz;Imperio de la luz, El;espectadores;3049;0
 2023-04-21;super-mario-bros-animada;Super Mario Bros. La pelicula;espectadores;393033;18
@@ -3520,6 +3581,7 @@
 2023-04-21;john-wick-4;John Wick 4;cines;199;279
 2023-04-21;maybe-i-do;Si, Quiero…o no;espectadores;17545;122379
 2023-04-21;suzume;Suzume;espectadores;16301;0
+2023-04-21;el-hotel-de-los-lios-gyg;Hotel de los lios. Garcia y Garcia 2, El;espectadores;10550;0
 2023-04-21;libres;Libres;espectadores;7579;0
 2023-04-21;maravilloso-desastre;Maravilloso desastre;espectadores;6755;0
 2023-04-21;renfield;Renfield;espectadores;5872;0
@@ -3548,6 +3610,7 @@
 2023-04-28;beau-tiene-miedo;Beau tiene miedo;espectadores;7208;0
 2023-04-28;un-cel-de-plom;Cel de Plom, Un;espectadores;5349;0
 2023-04-28;sisu;Sisu;espectadores;5350;0
+2023-04-28;el-hotel-de-los-lios-gyg;Hotel de los lios. Garcia y Garcia 2, El;espectadores;5285;0
 2023-04-28;avatar-2;Avatar: El Sentido del Agua;espectadores;1790;0
 2023-05-05;guardianes-de-la-galaxia-3;Guardianes de la Galaxia: Volumen 3;espectadores;430450;3
 2023-05-05;guardianes-de-la-galaxia-3;Guardianes de la Galaxia: Volumen 3;cines;365;860
@@ -3595,6 +3658,7 @@
 2023-05-12;mi-crimen;Mi crimen;espectadores;7342;0
 2023-05-12;libres;Libres;espectadores;6458;0
 2023-05-12;john-wick-4;John Wick 4;espectadores;3923;0
+2023-05-12;pleno-verano;Dungeons & Dragons: Honor entre ladrones;espectadores;4033;0
 2023-05-12;air-2023;Air;espectadores;2929;0
 2023-05-12;asedio;Asedio;espectadores;4103;0
 2023-05-12;las-buenas-companias;Buenas compañías, Las;espectadores;2950;0
@@ -3656,6 +3720,7 @@
 2023-06-02;fast-and-furious-10;Fast & Furious X;cines;340;756
 2023-06-02;como-dios-manda;Como Dios manda;espectadores;78912;545133
 2023-06-02;como-dios-manda;Como Dios manda;cines;316;319
+2023-06-02;the-boogeyman-el-hombre-del-saco;Boogeyman, The;espectadores;49508;346921
 2023-06-02;guardianes-de-la-galaxia-3;Guardianes de la Galaxia: Volumen 3;espectadores;47942;10
 2023-06-02;guardianes-de-la-galaxia-3;Guardianes de la Galaxia: Volumen 3;cines;274;401
 2023-06-02;super-mario-bros-animada;Super Mario Bros. La pelicula;espectadores;42215;26
@@ -3683,6 +3748,7 @@
 2023-06-09;fast-and-furious-10;Fast & Furious X;espectadores;69140;11
 2023-06-09;fast-and-furious-10;Fast & Furious X;cines;304;542
 2023-06-09;como-dios-manda;Como Dios manda;espectadores;56128;1
+2023-06-09;the-boogeyman-el-hombre-del-saco;Boogeyman, The;espectadores;26659;711451
 2023-06-09;guardianes-de-la-galaxia-3;Guardianes de la Galaxia: Volumen 3;espectadores;25167;10
 2023-06-09;super-mario-bros-animada;Super Mario Bros. La pelicula;espectadores;27124;26
 2023-06-09;super-mario-bros-animada;Super Mario Bros. La pelicula;cines;258;371
@@ -3714,6 +3780,7 @@
 2023-06-16;operacion-kandahar;Operacion Kandahar;cines;227;329
 2023-06-16;super-mario-bros-animada;Super Mario Bros. La pelicula;espectadores;15648;26
 2023-06-16;guardianes-de-la-galaxia-3;Guardianes de la Galaxia: Volumen 3;espectadores;10641;11
+2023-06-16;the-boogeyman-el-hombre-del-saco;Boogeyman, The;espectadores;9398;0
 2023-06-16;el-maestro-jardinero;Maestro jardinero, El;espectadores;9317;0
 2023-06-16;una-familia-de-superheroes;Una familia de superheroes;espectadores;9410;0
 2023-06-16;vaya-vacaciones-2023;Vaya vacaciones;espectadores;8035;0
@@ -3750,6 +3817,7 @@
 2023-06-23;una-vida-no-tan-simple;Una vida no tan simple;espectadores;7184;0
 2023-06-23;una-familia-de-superheroes;Una familia de superheroes;espectadores;7331;0
 2023-06-23;vaya-vacaciones-2023;Vaya vacaciones;espectadores;6398;0
+2023-06-23;the-boogeyman-el-hombre-del-saco;Boogeyman, The;espectadores;5375;0
 2023-06-23;el-maestro-jardinero;Maestro jardinero, El;espectadores;4846;0
 2023-06-23;upon-entry-2023;Upon Entry (La llegada);espectadores;2568;0
 2023-06-23;su-unico-hijo;Su unico hijo;espectadores;2066;0
@@ -3773,7 +3841,9 @@
 2023-06-30;asteorid-city;Asteroid City;espectadores;7931;584369
 2023-06-30;super-mario-bros-animada;Super Mario Bros. La pelicula;espectadores;8232;0
 2023-06-30;una-vida-no-tan-simple;Una vida no tan simple;espectadores;4647;0
+2023-06-30;guardianes-de-la-noche;Guardianes de la Galaxia: Volumen 3;espectadores;4402;0
 2023-06-30;vaya-vacaciones-2023;Vaya vacaciones;espectadores;4067;0
+2023-06-30;the-boogeyman-el-hombre-del-saco;Boogeyman, The;espectadores;3226;0
 2023-06-30;el-maestro-jardinero;Maestro jardinero, El;espectadores;2350;0
 2023-06-30;operacion-kandahar;Operacion Kandahar;espectadores;2183;0
 2023-06-30;carry-on-jatta-3;Carry On Jatta 3;espectadores;1518;0
@@ -3879,6 +3949,8 @@
 2023-07-28;insidious-la-puerta-roja;Insidious: La puerta roja;cines;303;314
 2023-07-28;mision-imposible-7;Mision: Imposible - Sentencia Mortal. Parte Uno;espectadores;53547;4
 2023-07-28;mision-imposible-7;Mision: Imposible - Sentencia Mortal. Parte Uno;cines;336;349
+2023-07-28;mansion-encantada;Mansion Encantada (Haunted Mansion);espectadores;59001;399328
+2023-07-28;mansion-encantada;Mansion Encantada (Haunted Mansion);cines;326;396
 2023-07-28;vacaciones-de-verano;Vacaciones de verano;espectadores;58361;5
 2023-07-28;vacaciones-de-verano;Vacaciones de verano;cines;333;364
 2023-07-28;indiana-jones-5;Indiana Jones y el Dial del Destino;espectadores;45772;10
@@ -3910,6 +3982,8 @@
 2023-08-04;vacaciones-de-verano;Vacaciones de verano;espectadores;35943;6
 2023-08-04;vacaciones-de-verano;Vacaciones de verano;cines;305;311
 2023-08-04;mision-imposible-7;Mision: Imposible - Sentencia Mortal. Parte Uno;espectadores;29745;5
+2023-08-04;mansion-encantada;Mansion Encantada (Haunted Mansion);espectadores;26404;1
+2023-08-04;mansion-encantada;Mansion Encantada (Haunted Mansion);cines;289;359
 2023-08-04;indiana-jones-5;Indiana Jones y el Dial del Destino;espectadores;24013;10
 2023-08-04;indiana-jones-5;Indiana Jones y el Dial del Destino;cines;191;256
 2023-08-04;el-colegio-de-los-animales-magicos-2-el-origen;Colegio de los animales magicos 2: El origen, El;espectadores;4529;0
@@ -3940,6 +4014,7 @@
 2023-08-11;indiana-jones-5;Indiana Jones y el Dial del Destino;espectadores;13805;11
 2023-08-11;indiana-jones-5;Indiana Jones y el Dial del Destino;cines;125;139
 2023-08-11;de-perdidos-a-rio;De perdidos a Rio;espectadores;13156;0
+2023-08-11;mansion-encantada;Mansion Encantada (Haunted Mansion);espectadores;8365;0
 2023-08-11;el-hombre-del-saco;Hombre del saco, El;espectadores;7154;0
 2023-08-11;godland;Godland;espectadores;4759;0
 2023-08-11;vampiro-al-rescate;Vampiro al rescate;espectadores;5197;0
@@ -3969,6 +4044,7 @@
 2023-08-18;indiana-jones-5;Indiana Jones y el Dial del Destino;espectadores;8305;0
 2023-08-18;insidious-la-puerta-roja;Insidious: La puerta roja;espectadores;7576;0
 2023-08-18;godland;Godland;espectadores;3439;0
+2023-08-18;mansion-encantada;Mansion Encantada (Haunted Mansion);espectadores;2453;0
 2023-08-18;de-perdidos-a-rio;De perdidos a Rio;espectadores;2039;0
 2023-08-18;el-hombre-del-saco;Hombre del saco, El;espectadores;1806;0
 2023-08-18;vampiro-al-rescate;Vampiro al rescate;espectadores;2028;0
@@ -4032,6 +4108,8 @@
 2023-09-01;passages;Passages;espectadores;4784;0
 2023-09-01;vacaciones-de-verano;Vacaciones de verano;espectadores;4945;0
 2023-09-01;me-he-tragado-un-extraterrestre;Me he tragado un extraterrestre;espectadores;4067;0
+2023-09-08;la-monja-2;Monja II, La;espectadores;286498;2
+2023-09-08;la-monja-2;Monja II, La;cines;325;512
 2023-09-08;the-equalizer-3;Equalizer 3, The;espectadores;99302;2
 2023-09-08;the-equalizer-3;Equalizer 3, The;cines;337;418
 2023-09-08;campeonex;Campeonex;espectadores;83628;8
@@ -4183,6 +4261,7 @@
 2025-06-27;the-last-showgirl;Last Showgirl, The;espectadores;1256;0
 2025-06-27;la-buena-suerte;Buena suerte, La;espectadores;841;0
 2025-06-27;votemos;Votemos;espectadores;908;0
+2025-06-27;la-quimera-del-oro;Quimera del oro, La (re) 100 Aniversario;espectadores;922;0
 2025-07-04;jurassic-world-4;Jurassic World: El Renacer;espectadores;474222;5
 2025-07-04;padre-no-hay-mas-que-uno-5;Padre no hay mas que uno 5;espectadores;181596;5
 2025-07-04;f1;F1, la pelicula;espectadores;133611;4
@@ -4210,6 +4289,7 @@
 2025-08-15;weapons;Weapons;espectadores;109211;3
 2025-08-15;materialistas;Materialistas;espectadores;91466;864701
 2025-08-15;los-tipos-malos-2;Tipos malos 2, Los;espectadores;70767;4
+2025-08-15;los-4-fantasticos-marvel-studios;Cuatro Fantasticos: Primeros pasos, Los;espectadores;48815;7
 2025-08-15;karate-kid-legends;Karate Kid: Legends;espectadores;45998;1
 2025-08-15;los-muertimer;Muertimer, Los;espectadores;41543;363770
 2025-08-15;jurassic-world-4;Jurassic World: El Renacer;espectadores;35402;17
@@ -4232,6 +4312,7 @@
 2025-08-22;materialistas;Materialistas;espectadores;55971;2
 2025-08-22;agarralo-como-puedas-2025;Agarralo como puedas;espectadores;52423;361610
 2025-08-22;los-tipos-malos-2;Tipos malos 2, Los;espectadores;45790;5
+2025-08-22;los-4-fantasticos-marvel-studios;Cuatro Fantasticos: Primeros pasos, Los;espectadores;25516;8
 2025-08-22;jurassic-world-4;Jurassic World: El Renacer;espectadores;23006;18
 2025-08-22;karate-kid-legends;Karate Kid: Legends;espectadores;22210;2
 2025-08-22;los-muertimer;Muertimer, Los;espectadores;19983;891771
@@ -4254,6 +4335,7 @@
 2025-11-28;nuremberg;Nuremberg;espectadores;63172;476790
 2025-11-28;ahora-me-ves-ahora-no-me-ves;Ahora me ves 3;espectadores;41579;2
 2025-11-28;coartadas;Coartadas;espectadores;33540;240465
+2025-11-28;dracula-a-love-tale;Dracula;espectadores;28960;786602
 2025-11-28;flores-para-antonio;Flores para Antonio;espectadores;17690;144858
 2025-11-28;los-domingos;Domingos, Los;espectadores;16587;3
 2025-11-28;the-running-man;Running Man, The;espectadores;14872;541304
