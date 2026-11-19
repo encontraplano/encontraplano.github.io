@@ -34,7 +34,7 @@ Web para estudiar si una película funciona en taquilla, con datos públicos que
 
 Una contraseña olvidada no se recupera: se crea un acceso nuevo con un token nuevo y se revoca el anterior en GitHub. En local, actualizar los datos no pide contraseña, porque el servidor solo escucha en tu PC.
 
-En los tres casos la web funciona igual. Los datos se actualizan solos en GitHub Actions los martes y los viernes. Para descargarlos en tu PC sin publicar nada, usa `actualizar.bat`.
+En los tres casos la web funciona igual. Los datos se actualizan solos en GitHub Actions (ver *Calendario*). Para descargarlos en tu PC sin publicar nada, usa `actualizar.bat`.
 
 ## Publicar sin exponer tu cuenta
 
@@ -61,17 +61,28 @@ Si alguien llegara a descifrar el token, solo podría modificar este repositorio
 
 1. Crea un repositorio **público** en GitHub y sube esta carpeta.
 2. En *Settings › Pages*, elige *Source: GitHub Actions*.
-3. En *Actions*, ejecuta «actualizar» una vez. La primera ejecución tarda unos 45 minutos porque descarga el histórico.
+3. En *Actions*, ejecuta «actualizar» una vez. La primera ejecución tarda entre una y dos horas porque descarga el histórico desde 2020.
 
 4. Crea un token *fine-grained* limitado a ese repositorio, con permisos **Actions** y **Contents** de lectura y escritura. Después, en la web publicada, pulsa la rueda dentada y crea el acceso de administración con ese token.
 
-A partir de ahí, `.github/workflows/actualizar.yml` actualiza los datos en la nube los martes y los viernes sin depender de tu PC. Cuando cambias algo en la administración (aviso, pestañas…), el mismo flujo republica la web en uno o dos minutos sin volver a descargar datos.
+A partir de ahí, `.github/workflows/actualizar.yml` actualiza los datos en la nube sin depender de tu PC. Cuando cambias algo en la administración (aviso, pestañas…), el mismo flujo republica la web en uno o dos minutos sin volver a descargar datos.
+
+## Calendario
+
+El ICAA publica el **jueves** la taquilla del fin de semana anterior.
+
+| Día | Qué hace |
+|---|---|
+| Jueves 15:37 UTC | Carga la taquilla del ICAA (y la de eCartelera si ya está) |
+| Viernes 11:00 UTC | Revisión completa: taquilla, fichas, críticas, estrenos y sesiones de los cines |
+| Sábado 10:23 UTC | Solo si todavía falta el fin de semana pasado en el ICAA; si no, termina sin hacer nada |
 
 ## Fuentes y qué es estimado
 
 | Dato | Fuente | Granularidad |
 |---|---|---|
-| Recaudación, espectadores, cines, total acumulado | eCartelera (datos comScore) | película × fin de semana (top 25) |
+| Recaudación, espectadores, cines, acumulado en euros y en espectadores, distribuidora | ICAA, top 25 semanal en PDF (datos de Rentrak), desde 2020 | película × fin de semana (top 25) |
+| Lo mismo para fines de semana que el ICAA no tenga | eCartelera (datos comScore) | película × fin de semana (top 25) |
 | Ficha: país, género, director, distribuidora, presupuesto | eCartelera | película |
 | Críticas: nota media, prensa (positivas, mixtas, negativas y citas), público | eCartelera, página de críticas | película |
 | Sesiones, precio, cadena y ubicación de cada cine | eCartelera, ficha de cine | cine × película × día (vie, sáb, dom) |
@@ -80,6 +91,9 @@ A partir de ahí, `.github/workflows/actualizar.yml` actualiza los datos en la n
 | Mapa base | Esri (sin clave; funciona también con doble clic) | |
 
 - **Real:** las cifras nacionales por película y fin de semana.
+- **ICAA y eCartelera:** las dos publican los mismos datos de Rentrak/comScore. El ICAA sale antes (el jueves) y trae los acumulados exactos, los cines de las 25 películas y los espectadores totales; eCartelera redondea los acumulados por encima de 1 M€ y solo da los cines del top 10. Por eso, cuando un fin de semana está en las dos, manda el ICAA. Cada PDF se valida (puestos seguidos y suma igual a la fila TOTAL); si no cuadra, ese fin de semana se queda con eCartelera. Las diferencias entre ambas se guardan en `data/contraste_fuentes.csv`.
+- **Emparejado de títulos:** el ICAA escribe el artículo al final («Bola negra, La») y a menudo sin tildes. Cada título se empareja con su película de eCartelera, por este orden: corrección manual, mismas cifras el mismo fin de semana, continuidad con la semana anterior y, para los estrenos, parecido de título (en español u original) solo entre las películas en cartelera ese fin de semana. Lo que no se puede emparejar con seguridad entra con un id provisional y se corrige solo cuando eCartelera publica ese fin de semana. Para forzar una pareja, edita `data/icaa_emparejado.csv` y pon `manual` en la columna `metodo`.
+- **Pandemia:** las películas cuya carrera cae entre marzo de 2020 y junio de 2021 (cines cerrados o con aforo limitado) se ven en la web, pero no se usan para comparar ni para prever.
 - **Estimado:** comunidad, provincia, cine y cadena. La taquilla nacional se reparte con el peso de cada comunidad y, dentro de ella, con las sesiones × el precio de cada cine.
 - **Deducido:** la recaudación entre semana, a partir de los totales acumulados.
 - **Previsión final:** total actual × la relación «total final / total en la misma semana» de las 25 películas ya retiradas más parecidas (apertura por cine, número de cines, género y origen). Se muestra la mediana y el rango entre el percentil 25 y el 75.
@@ -87,10 +101,13 @@ A partir de ahí, `.github/workflows/actualizar.yml` actualiza los datos en la n
 ## Archivos
 
 - `scripts/ingesta.py`: taquilla, fichas, críticas, estrenos, métricas y generación de la web.
+- `scripts/icaa.py`: lectura de los PDF del ICAA, validación y emparejado con eCartelera. `python scripts/icaa.py --comprobar` dice si falta el último fin de semana.
 - `scripts/sesiones.py`: sesiones por cine. Si se corta, continúa donde lo dejó.
 - `scripts/servidor.py`: servidor local con el botón de actualizar. Solo escucha en tu PC.
 - `scripts/tarea.py` y `scripts/programar_tarea.ps1`: tarea programada de Windows. No está activa porque las actualizaciones se hacen en GitHub.
 - `.github/workflows/actualizar.yml`: actualización y publicación en GitHub.
-- `data/peliculas.csv` y `data/taquilla_fines_de_semana.csv`: los datos para Excel (separador `;`).
+- `data/peliculas.csv` y `data/taquilla_fines_de_semana.csv`: los datos para Excel (separador `;`). La columna `fuente` dice de dónde sale cada fila.
+- `data/icaa_top25.csv`: el top 25 del ICAA tal como viene en los PDF. `data/icaa_pdfs.json`: qué PDF se ha leído y por qué se ha descartado alguno.
+- `data/icaa_emparejado.csv`: título del ICAA → película. `data/contraste_fuentes.csv`: diferencias entre ICAA y eCartelera.
 - `data/cache/`: HTML ya descargado. No se sube a GitHub.
 - `web/`: la web.

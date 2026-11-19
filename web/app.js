@@ -42,7 +42,8 @@
   const lista = a => a.length <= 1 ? (a[0] || "") : a.slice(0, -1).join(", ") + " y " + a[a.length - 1];
 
   // ================================================================== datos
-  const [F, P, POS, SEM, FE, ES, CI, TOT, ESEM] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+  const [F, P, POS, SEM, FE, ES, CI, TOT, ESEM, TESP] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const FUENTES = D.fuentes || [];                                   // de dónde sale cada fin de semana
   const ULT = D.fines.length - 1;
   const pelis = D.pelis;
   const porPeli = pelis.map(() => []);
@@ -67,10 +68,17 @@
     p.ultimoPaso = todos.length ? Math.max(...todos) : ULT;
     p.enCartelera = p.conTaquilla && p.ultimoFin >= ULT_TAQ;
     p.espectFindes = rs.reduce((s, r) => s + (r[ES] || 0), 0);
+    // espectadores totales (ICAA, días laborables incluidos); si no hay, la suma de los fines de semana
+    p.espectTotal = rs.reduce((m, r) => Math.max(m, r[TESP] || 0), 0) || null;
+    p.espect = p.espectTotal || p.espectFindes;
     p.porCine = p.apertura_cines ? p.apertura_eur / p.apertura_cines : null;
     p.aguante = p.caida_2 == null ? null : 100 + p.caida_2;
     p.genero = (p.generos || [])[0] || NADA;
     p.origen = p.espanola ? "España" : ((p.paises || [])[0] || NADA);
+    // carrera afectada por el cierre de cines y las restricciones de aforo (marzo 2020 a junio 2021):
+    // se queda fuera de las comparaciones para no deformar veredictos ni previsiones
+    const ini = p.primer_fin || (rs.length ? D.fines[rs[0][F]] : null), fin = rs.length ? D.fines[rs[rs.length - 1][F]] : ini;
+    p.pandemia = !!ini && fin >= "2020-02-28" && ini <= "2021-06-25";
   });
 
   // directores
@@ -667,7 +675,7 @@
     { k: "total_eur", nombre: "Taquilla total", fmt: eur },
     { k: "porCine", nombre: "Apertura por cine", fmt: eur },
     { k: "multiplicador", nombre: "Multiplicador", fmt: mult },
-    { k: "aguante", nombre: "Caída 2.º finde", fmt: v => pct(v - 100) },
+    { k: "aguante", nombre: "Caída 2.º finde", fmt: v => v == null ? NADA : pct(v - 100) },
   ];
   const GRUPOS = {
     todas: { nombre: "Todos los estrenos", f: () => true },
@@ -676,7 +684,7 @@
     anio: { nombre: "Mismo año", f: (p, q) => p.anio === q.anio },
   };
   function percentiles(p, grupo) {
-    const pares = pelis.filter(q => q.completa && GRUPOS[grupo].f(p, q));
+    const pares = pelis.filter(q => q.completa && !q.pandemia && GRUPOS[grupo].f(p, q));
     const res = METRICAS.map(m => {
       const v = p[m.k];
       const vs = pares.map(q => q[m.k]).filter(x => x != null);
@@ -710,7 +718,7 @@
     let out = null;
     const n = Math.max(0, ...porPeli[p.i].map(r => r[SEM] || 0));
     if (p.completa && p.enCartelera && n >= 1 && p.porCine && p.total_eur) {
-      const cands = pelis.filter(q => q.completa && !q.enCartelera && q.porCine && q.apertura_cines && q.total_eur && q.i !== p.i)
+      const cands = pelis.filter(q => q.completa && !q.enCartelera && !q.pandemia && q.porCine && q.apertura_cines && q.total_eur && q.i !== p.i)
         .map(q => {
           const base = totalEnSemana(q, n);
           if (!base || base <= 0 || q.total_eur < base) return null;
@@ -798,7 +806,7 @@
         ${kpi("Caída 2.º finde", pct(p.caida_2))}
         ${kpi("Multiplicador", mult(p.multiplicador), "Total entre primer finde")}
         ${kpi("Semanas en top 25", num(p.semanas_top25), `Mejor puesto: ${p.mejor_puesto}.º`)}
-        ${kpi("Espectadores", num(p.espectFindes), precio ? `Fines de semana. Entrada a ${dec(precio, 2)} €` : "Fines de semana")}
+        ${kpi("Espectadores", num(p.espect), (p.espectTotal ? "Total en cines" : "Fines de semana") + (precio ? `. Entrada a ${dec(precio, 2)} €` : ""))}
         ${p.presupuesto ? kpi("Presupuesto", eurCorto(p.presupuesto).replace("€", p.presupuesto_moneda)) : ""}
         ${p.mundial ? kpi("Taquilla mundial", eurCorto(p.mundial).replace("€", p.mundial_moneda), mismaMoneda ? `${mult(p.mundial / p.presupuesto)} su presupuesto` : "") : ""}
       </dl>
@@ -811,13 +819,13 @@
     const rs = porFin[st.fin];
     if (!rs.length) {
       panel.innerHTML = `<div class="cab"><h2>Fin de semana del ${fechaFin(st.fin)}</h2></div>
-        <p class="vacio">La taquilla se publica el martes. El mapa ya muestra las sesiones por cine.</p>`;
+        <p class="vacio">La taquilla del fin de semana se publica el jueves siguiente. El mapa ya muestra las sesiones por cine.</p>`;
       return;
     }
     const tot = rs.reduce((s, r) => s + (r[FE] || 0), 0), esp = rs.reduce((s, r) => s + (r[ES] || 0), 0);
     const estrenos = rs.filter(r => r[SEM] === 1).length;
     panel.innerHTML = `
-      <div class="cab" style="margin:0"><h2>Top del ${fechaFin(st.fin)}</h2></div>
+      <div class="cab" style="margin:0"><h2>Top del ${fechaFin(st.fin)}</h2>${FUENTES[st.fin] ? `<span class="cab-dato">Fuente: ${esc(FUENTES[st.fin])}</span>` : ""}</div>
       <dl class="kpis cuatro">
         ${kpi("Recaudación", eur(tot), "Top 25")}
         ${kpi("Espectadores", num(esp))}
@@ -1228,7 +1236,7 @@
       const filas = [
         ["Taquilla total", "total_eur", eur, 1], ["Primer fin de semana", "apertura_eur", eur, 1], ["Cines en el estreno", "apertura_cines", num, 0],
         ["Apertura por cine", "porCine", eur, 1], ["Caída 2.º finde", "caida_2", pct, 1], ["Multiplicador", "multiplicador", mult, 1],
-        ["Semanas en top 25", "semanas_top25", num, 1], ["Espectadores", "espectFindes", num, 1], ["Percentil global", "notaTodas", v => v == null ? NADA : "p" + Math.round(v * 100), 1],
+        ["Semanas en top 25", "semanas_top25", num, 1], ["Espectadores", "espect", num, 1], ["Percentil global", "notaTodas", v => v == null ? NADA : "p" + Math.round(v * 100), 1],
       ];
       const notaCrit = (p, j) => crit[p.id]?.prensa?.[j];
       const celda = (va, vb, fmt, mejorAlto) => {
@@ -1438,7 +1446,7 @@
       <section class="admin-sec"><h3>Datos</h3>
         <dl class="estado-datos">
           <dt>Generados</dt><dd>${gen.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}, ${gen.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}</dd>
-          <dt>Última taquilla</dt><dd>${fechaFin(ULT_TAQ)}</dd>
+          <dt>Última taquilla</dt><dd>${fechaFin(ULT_TAQ)}${FUENTES[ULT_TAQ] ? ` (${esc(FUENTES[ULT_TAQ])})` : ""}</dd>
           <dt>Últimas sesiones</dt><dd>${SES.length ? fechaFin(SES[SES.length - 1].fin) : "Ninguna"}</dd>
           <dt>Histórico</dt><dd>${num(D.fines.length)} fines de semana, ${num(pelis.length)} películas</dd>
         </dl>

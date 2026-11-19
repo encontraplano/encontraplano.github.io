@@ -33,6 +33,9 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import icaa  # noqa: E402  (taquilla semanal del ICAA)
+
 RAIZ = Path(__file__).resolve().parent.parent
 CACHE = RAIZ / "data" / "cache"
 REFERENCIA = RAIZ / "data" / "referencia" / "icaa_ccaa_2025.csv"
@@ -54,7 +57,7 @@ _ultima_peticion = 0.0
 
 # --------------------------------------------------------------------------- red
 
-def descargar(url, intentos=3, datos=None):
+def descargar(url, intentos=3, datos=None, binario=False):
     global _ultima_peticion
     for n in range(intentos):
         espera = PAUSA - (time.time() - _ultima_peticion)
@@ -64,7 +67,8 @@ def descargar(url, intentos=3, datos=None):
         try:
             req = urllib.request.Request(url, data=datos, headers={"User-Agent": UA})
             with urllib.request.urlopen(req, timeout=180) as r:
-                return r.read().decode("utf-8", errors="replace")
+                cuerpo = r.read()
+                return cuerpo if binario else cuerpo.decode("utf-8", errors="replace")
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 return None
@@ -602,7 +606,7 @@ def proximos_estrenos(hoy):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--desde", type=int, default=2024, help="primer año del histórico")
+    ap.add_argument("--desde", type=int, default=2020, help="primer año del histórico (el ICAA publica desde 2020)")
     ap.add_argument("--mapa", action="store_true", help="regenerar mapa y cines")
     args = ap.parse_args()
     hoy = dt.date.today()
@@ -620,7 +624,7 @@ def main():
 
     # 2. cada fin de semana (los 2 últimos se vuelven a bajar por si hay correcciones)
     recientes = {f["slug"] for f in fines[-2:]}
-    filas = []
+    ec_por_fin = {}
     for f in fines:
         ruta = CACHE / "fines" / f"{f['anio']}_{f['slug']}.html"
         nuevo = not ruta.exists()
@@ -634,8 +638,55 @@ def main():
         if nuevo:
             print(f"  + {f['viernes']}  {len(datos)} películas")
         for d in datos:
-            d.update({"viernes": f["viernes"].isoformat(), "id": id_peli(d)})
-            filas.append(d)
+            d.update({"viernes": f["viernes"].isoformat(), "id": id_peli(d), "fuente": "eCartelera"})
+        ec_por_fin[f["viernes"].isoformat()] = datos
+
+    # 2b. ICAA: top 25 semanal en PDF (sale los jueves, antes que eCartelera, con acumulados exactos)
+    semanas_icaa = icaa.actualizar(descargar, args.desde, hoy)
+    sesiones = procesar_sesiones()
+    proximos = proximos_estrenos(hoy)
+    candidatos = {}
+    for v in sorted(ec_por_fin):
+        for d in ec_por_fin[v]:
+            candidatos[d["id"]] = d["titulo"]
+    for v, titulos in sesiones:
+        for slug, titulo in titulos.items():
+            candidatos.setdefault(slug, titulo)
+    for slug, titulo, _ in proximos:
+        candidatos.setdefault(slug, titulo)
+    en_cartelera = {v: set(titulos) for v, titulos in sesiones}
+    emparejado, contraste = icaa.emparejar(semanas_icaa, ec_por_fin, candidatos, en_cartelera)
+
+    # 2c. una sola tabla: el ICAA manda en los fines de semana que publica; eCartelera cubre el resto
+    filas, fuente_fin = [], {}
+    for v in sorted(set(ec_por_fin) | set(emparejado)):
+        if v in emparejado:
+            fuente_fin[v] = "ICAA" + (" + eCartelera" if v in ec_por_fin else "")
+            for r, pid, metodo, e in emparejado[v]:
+                filas.append({
+                    "viernes": v, "id": pid, "pos": r["puesto"],
+                    "titulo": (e or {}).get("titulo") or candidatos.get(pid) or icaa.articulo_delante(r["titulo"]),
+                    "url": (e or {}).get("url"), "semana": r["semana"] or (e or {}).get("semana") or 0,
+                    "cines": r["cines"] if r["cines"] is not None else (e or {}).get("cines"),
+                    "fin_eur": r["recaudacion_eur"], "espect": r["espectadores"],
+                    "total_eur": r["acumulado_eur"] if r["acumulado_eur"] is not None else (e or {}).get("total_eur"),
+                    "total_espect": r["acumulado_espectadores"], "distribuidora_icaa": r["distribuidora"],
+                    "fuente": "ICAA", "emparejado": metodo})
+        else:
+            fuente_fin[v] = "eCartelera"
+            filas.extend(ec_por_fin[v])
+    metodos = {}
+    for v in emparejado:
+        for _, _, metodo, _ in emparejado[v]:
+            metodos[metodo] = metodos.get(metodo, 0) + 1
+    if emparejado:
+        ult = max(emparejado)
+        sin = [r["titulo"] for r, pid, m, _ in emparejado[ult] if m == "sin pareja"]
+        print(f"ICAA: {len(emparejado)} fines de semana; emparejado {metodos}")
+        if sin:
+            print(f"  sin pareja en eCartelera el {ult}: {', '.join(sin)}")
+        if contraste:
+            print(f"  {len(contraste)} diferencias con eCartelera (data/contraste_fuentes.csv)")
 
     # 3. fichas de película
     ids = {}
@@ -650,8 +701,13 @@ def main():
         if pid in pendientes and n % 25 == 0:
             print(f"  {n}/{len(ids)}")
 
+    # la distribuidora del ICAA completa las fichas que no la tienen
+    for d in filas:
+        if d.get("distribuidora_icaa") and not pelis[d["id"]].get("distribuidora"):
+            pelis[d["id"]]["distribuidora"] = d["distribuidora_icaa"]
+
     # 4. métricas por película
-    viernes_ord = [f["viernes"].isoformat() for f in fines]
+    viernes_ord = sorted({f["viernes"].isoformat() for f in fines} | set(fuente_fin))
     idx_fin = {v: i for i, v in enumerate(viernes_ord)}
     por_peli = {}
     for d in filas:
@@ -670,6 +726,7 @@ def main():
         p["apertura_espect"] = primera["espect"]
         p["apertura_cines"] = primera["cines"]
         p["total_eur"] = max((d["total_eur"] or 0) for d in ds)
+        p["total_espect"] = max((d.get("total_espect") or 0) for d in ds) or None
         p["semanas_top25"] = len(ds)
         p["max_cines"] = max((d["cines"] or 0) for d in ds) or None
         p["mejor_puesto"] = min(d["pos"] for d in ds)
@@ -685,7 +742,6 @@ def main():
         ccaa = [{k: (v if k == "ccaa" else float(v)) for k, v in r.items()} for r in csv.DictReader(fh)]
 
     # 5b. sesiones por cine: fines de semana capturados y películas que aún no tienen taquilla
-    sesiones = procesar_sesiones()
     extra = []
     for v, titulos in sesiones:
         if v not in idx_fin:
@@ -701,7 +757,6 @@ def main():
     idx_fin = {v: i for i, v in enumerate(viernes_ord)}
 
     # 5c. próximos estrenos en cines
-    proximos = proximos_estrenos(hoy)
     nuevas = [s for s, _, _ in proximos if s not in pelis and not (CACHE / "pelis" / f"{s}.html").exists()]
     if nuevas:
         print(f"Descargando {len(nuevas)} fichas de próximos estrenos...")
@@ -723,9 +778,12 @@ def main():
         "sesiones": [{"v": v, "fin": idx_fin[v], "pelis": sorted(idx_peli[s] for s in titulos if s in idx_peli)}
                      for v, titulos in sesiones],
         "proximos": [[idx_peli[s], fecha] for s, _, fecha in proximos],
-        "campos": ["fin", "peli", "pos", "semana", "fin_eur", "espect", "cines", "total_eur", "entre_semana"],
+        "fuentes": [fuente_fin.get(v) for v in viernes_ord],
+        "campos": ["fin", "peli", "pos", "semana", "fin_eur", "espect", "cines", "total_eur", "entre_semana",
+                   "total_espect"],
         "filas": [[idx_fin[d["viernes"]], idx_peli[d["id"]], d["pos"], d["semana"], d["fin_eur"],
-                   d["espect"], d["cines"], d["total_eur"], d.get("entre_semana")] for d in filas],
+                   d["espect"], d["cines"], d["total_eur"], d.get("entre_semana"), d.get("total_espect")]
+                  for d in filas],
         "pelis": [pelis[pid] for pid in orden_pelis],
         "ccaa": ccaa,
     }
@@ -746,13 +804,15 @@ def main():
     with open(RAIZ / "data" / "taquilla_fines_de_semana.csv", "w", newline="", encoding="utf-8-sig") as fh:
         w = csv.writer(fh, delimiter=";")
         w.writerow(["viernes", "pelicula_id", "titulo", "puesto", "semana", "recaudacion_finde_eur",
-                    "espectadores_finde", "cines", "total_acumulado_eur", "entre_semana_siguiente_eur"])
-        for d in filas:
+                    "espectadores_finde", "cines", "total_acumulado_eur", "entre_semana_siguiente_eur",
+                    "total_acumulado_espectadores", "fuente"])
+        for d in sorted(filas, key=lambda d: (d["viernes"], d["pos"])):
             w.writerow([d["viernes"], d["id"], d["titulo"], d["pos"], d["semana"], d["fin_eur"],
-                        d["espect"], d["cines"], d["total_eur"], d.get("entre_semana")])
+                        d["espect"], d["cines"], d["total_eur"], d.get("entre_semana"), d.get("total_espect"),
+                        d.get("fuente")])
     campos = ["id", "titulo", "estreno", "primer_fin", "completa", "espanola", "paises", "generos", "director",
               "distribuidora", "duracion", "edad", "nota", "presupuesto", "presupuesto_moneda", "mundial",
-              "mundial_moneda", "apertura_eur", "apertura_espect", "apertura_cines", "total_eur",
+              "mundial_moneda", "apertura_eur", "apertura_espect", "apertura_cines", "total_eur", "total_espect",
               "multiplicador", "caida_2", "semanas_top25", "mejor_puesto", "max_cines", "url"]
     with open(RAIZ / "data" / "peliculas.csv", "w", newline="", encoding="utf-8-sig") as fh:
         w = csv.writer(fh, delimiter=";")
@@ -763,7 +823,9 @@ def main():
             p = pelis[pid]
             w.writerow([", ".join(map(str, p.get(c))) if isinstance(p.get(c), list) else p.get(c) for c in campos])
 
-    print(f"Listo: {len(filas)} filas, {len(pelis)} películas, último fin de semana {viernes_ord[-1]}")
+    ult_taq = max(d["viernes"] for d in filas)
+    print(f"Listo: {len(filas)} filas, {len(pelis)} películas, último fin de semana con taquilla {ult_taq} "
+          f"({fuente_fin.get(ult_taq)})")
 
 
 if __name__ == "__main__":
