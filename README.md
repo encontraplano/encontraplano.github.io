@@ -104,7 +104,7 @@ Un push a `main` solo republica la web, salvo que el mensaje del commit lleve `[
 
 - `scripts/ingesta.py`: taquilla, fichas, críticas, estrenos, métricas y generación de la web.
 - `scripts/icaa.py`: lectura de los PDF del ICAA, validación y emparejado con eCartelera. `python scripts/icaa.py --comprobar` dice si falta el último fin de semana.
-- `scripts/sesiones.py`: sesiones por cine. Si se corta, continúa donde lo dejó.
+- `scripts/sesiones.py`: sesiones por cine. Cada semana revisa solo los cines que publican cartelera, y todos una vez cada 4 semanas. Si se corta, continúa donde lo dejó.
 - `scripts/servidor.py`: servidor local con el botón de actualizar. Solo escucha en tu PC.
 - `scripts/tarea.py` y `scripts/programar_tarea.ps1`: tarea programada de Windows. No está activa porque las actualizaciones se hacen en GitHub.
 - `.github/workflows/actualizar.yml`: actualización y publicación en GitHub.

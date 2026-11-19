@@ -3,15 +3,18 @@ Captura las sesiones de cada cine (eCartelera) para el fin de semana en curso.
 
 Solo hace algo de viernes a domingo: guarda cuántas sesiones tiene cada película
 en cada cine el viernes, el sábado y el domingo. Con eso, ingesta.py estima
-la recaudación por cine en cuanto se publica la taquilla nacional (el martes).
+la recaudación por cine en cuanto se publica la taquilla nacional (el jueves siguiente).
 
   - Directorio de cines: se recorre una vez al mes (provincias + ciudades).
+  - Cada fin de semana se revisan solo los cines que publicaron cartelera en las 4 últimas
+    capturas (unos 270 de 750); todos, cada 4 semanas o al rehacer el directorio.
   - Instantánea: data/sesiones/AAAA-MM-DD.json (viernes del fin de semana).
     Si se interrumpe, al relanzar continúa donde lo dejó.
 
 Uso:
-  python scripts/sesiones.py           # captura si hoy es vie/sáb/dom
-  python scripts/sesiones.py --forzar  # captura el próximo fin de semana aunque no lo sea
+  python scripts/sesiones.py             # captura si hoy es vie/sáb/dom
+  python scripts/sesiones.py --forzar    # captura el próximo fin de semana aunque no lo sea
+  python scripts/sesiones.py --completo  # revisa todos los cines del directorio
 """
 
 import argparse
@@ -64,6 +67,31 @@ def directorio(forzar=False):
                           encoding="utf-8")
     print(f"  {len(urls)} cines en el directorio")
     return urls
+
+
+def activos(n=4):
+    """Cines con sesiones en alguna de las n últimas capturas."""
+    vistos = set()
+    for ruta in sorted(SESIONES.glob("*.json"))[-n:]:
+        try:
+            s = json.loads(ruta.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        vistos |= {u for u, c in s.get("cines", {}).items() if c.get("ses")}
+    return vistos
+
+
+def ultimo_barrido():
+    try:
+        return dt.date.fromisoformat(json.loads(DIRECTORIO.read_text(encoding="utf-8"))["barrido"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def apuntar_barrido(viernes):
+    d = json.loads(DIRECTORIO.read_text(encoding="utf-8"))
+    d["barrido"] = viernes.isoformat()
+    DIRECTORIO.write_text(json.dumps(d, indent=0), encoding="utf-8")
 
 
 # --------------------------------------------------------------------------- ficha de cine
@@ -122,6 +150,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--forzar", action="store_true", help="capturar aunque hoy no sea fin de semana")
     ap.add_argument("--directorio", action="store_true", help="rehacer el directorio de cines")
+    ap.add_argument("--completo", action="store_true", help="revisar todos los cines del directorio")
     args = ap.parse_args()
     ing.PAUSA = 1.2  # ritmo tranquilo: ~3.000 peticiones/hora como máximo
     hoy = dt.date.today()
@@ -133,6 +162,15 @@ def main():
     objetivo = [f for f in fechas if f >= hoy]  # los días ya pasados no se pueden ver
 
     urls = directorio(args.directorio)
+    # Solo ~1 de cada 3 cines del directorio publica cartelera. Cada fin de semana se revisan los que la
+    # publicaron en las últimas capturas; todos, una vez cada 4 semanas o al rehacer el directorio
+    # (que borra la fecha del barrido), para descubrir los que empiezan a publicarla.
+    barrido, act = ultimo_barrido(), activos()
+    completo = args.completo or not act or barrido is None or (viernes - barrido).days >= 28
+    if not completo:
+        urls = [u for u in urls if u in act]
+        print(f"Sesiones: solo los {len(urls)} cines con cartelera en las últimas capturas "
+              f"(revisión de todos el {barrido + dt.timedelta(days=28)})")
     ruta = SESIONES / f"{viernes.isoformat()}.json"
     SESIONES.mkdir(parents=True, exist_ok=True)
     snap = json.loads(ruta.read_text(encoding="utf-8")) if ruta.exists() else \
@@ -185,6 +223,8 @@ def main():
             guardar()
             print(f"  {n}/{len(pendientes)} cines")
     guardar()
+    if completo:
+        apuntar_barrido(viernes)
     con = sum(1 for c in snap["cines"].values() if c["ses"])
     print(f"Sesiones guardadas: {con} cines con programación, {len(snap['pelis'])} películas")
 
