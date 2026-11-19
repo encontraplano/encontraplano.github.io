@@ -101,6 +101,14 @@ def limpiar(s):
     return re.sub(r"\s+", " ", html.unescape(s)).strip()
 
 
+def sin_comillas(s):
+    """Quita las comillas que eCartelera pone a veces alrededor del título."""
+    s = (s or "").strip()
+    while len(s) > 1 and s[0] + s[-1] in ('""', "''", "«»", "“”", "‘’"):
+        s = s[1:-1].strip()
+    return s
+
+
 def slugify(s):
     s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode()
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
@@ -306,7 +314,7 @@ def ficha_peli(pid, titulo):
     dur = re.search(r"PT(\d+)M", movie.get("duration", "") or "")
     nota = movie.get("aggregateRating") or {}
     base.update({
-        "titulo": html.unescape(movie.get("name") or titulo),
+        "titulo": sin_comillas(html.unescape(movie.get("name") or titulo)),
         "estreno": movie.get("datePublished"),
         "duracion": int(dur.group(1)) if dur else None,
         "generos": lista(movie.get("genre")),
