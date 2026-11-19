@@ -35,6 +35,7 @@ import json
 import re
 import unicodedata
 from difflib import SequenceMatcher
+from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -85,6 +86,7 @@ def normalizar(t):
     return re.sub(r"[^a-z0-9]+", " ", t).strip()
 
 
+@lru_cache(maxsize=None)
 def clave(t):
     """Clave para comparar títulos: artículo delante, sin tildes ni puntuación, sin el artículo inicial."""
     palabras = normalizar(articulo_delante(t)).split()
@@ -101,12 +103,20 @@ def clave_slug(pid):
     return clave(" ".join(p))
 
 
+@lru_cache(maxsize=None)
 def parecido(a, b):
     if not a or not b:
         return 0.0
     if a == b:
         return 1.0
-    r = SequenceMatcher(None, a, b).ratio()
+    # Se compara con miles de títulos: primero las cotas rápidas, que nunca son menores que el parecido
+    # real; si ya quedan por debajo de 0,85 (los umbrales son 0,9 y 0,92), no hace falta el cálculo entero.
+    sm = SequenceMatcher(None, a, b)
+    r = sm.real_quick_ratio()
+    if r >= 0.85:
+        r = sm.quick_ratio()
+    if r >= 0.85:
+        r = sm.ratio()
     corto, largo = sorted((a, b), key=len)
     if len(corto) >= 8 and largo.startswith(corto + " ") and len(corto) / len(largo) >= 0.6:
         r = max(r, 0.9)  # 'wildwood' frente a 'wildwood el bosque salvaje' no basta; esto sí: subtítulo omitido
@@ -564,30 +574,110 @@ def _cifras_iguales(r, e):
     return b is not None and abs(a - b) <= max(2, 0.005 * a)  # eCartelera redondea por encima de 1 M€
 
 
+def _eur_igual(r, e):
+    """Misma recaudación del fin de semana (eCartelera redondea por encima de 1 M€). Las páginas antiguas
+    de eCartelera traen los espectadores mal, así que la recaudación sola, con el puesto, ya identifica."""
+    a, b = r["recaudacion_eur"], e.get("fin_eur")
+    return bool(b) and abs(a - b) <= max(2, 0.0005 * a)  # al euro; con margen solo por encima de 1 M€
+
+
+def variantes(t):
+    """'Ballena, La (The Whale)' -> el título entero, sin el paréntesis y lo que va dentro."""
+    t = t or ""
+    out = [t, re.sub(r"\s*\([^)]*\)", "", t)] + re.findall(r"\(([^)]*)\)", t)
+    return [v for v in dict.fromkeys(v.strip() for v in out) if v]
+
+
+@lru_cache(maxsize=None)
+def _claves(*titulos):
+    """Claves de comparación de un título y sus variantes ('(re)' de un reestreno no es un título)."""
+    return tuple(dict.fromkeys(k for t in titulos for v in variantes(t) if len(k := clave(v)) >= 3))
+
+
 def _sim(r, titulo, pid):
-    mias = [clave(r["titulo"]), clave(r.get("titulo_original") or "")]
-    suyas = [clave(titulo or ""), clave_slug(pid) if pid and not pid.startswith("x-") else ""]
-    return max(parecido(a, b) for a in mias for b in suyas)
+    mias = _claves(r["titulo"], r.get("titulo_original") or "")
+    suyas = _claves(titulo or "") + ((clave_slug(pid),) if pid and not pid.startswith("x-") else ())
+    return max((parecido(a, b) for a in mias for b in suyas if len(b) >= 3), default=0.0)
 
 
-def emparejar(semanas, ec_por_fin, candidatos, en_cartelera):
+def estreno_deducido(r, viernes):
+    """Fecha de estreno que se deduce de la semana del ICAA (que cuenta desde el estreno)."""
+    return viernes - dt.timedelta(days=7 * ((r.get("semana") or 1) - 1))
+
+
+def coherencia(resultado, buscar=None, fecha=None):
+    """Todas las semanas de un mismo estreno (misma clave y misma fecha de estreno deducida) con una sola
+    película. eCartelera a veces enlaza mal una fila de su tabla (Barbie de 2023 a la de 2017, una semana
+    de Guardianes de la Galaxia 3 a Guardianes de la noche...): se elige la película cuya ficha tiene un
+    estreno que cuadra y, entre esas, la más repetida. Devuelve {(viernes, índice): id nuevo}."""
+    grupos = {}
+    for v in sorted(resultado):
+        vd = dt.date.fromisoformat(v)
+        for k, (r, pid, metodo, _) in enumerate(resultado[v]):
+            est = estreno_deducido(r, vd)
+            lista = grupos.setdefault(clave_fila(r), [])
+            g = next((g for g in lista if abs((g["est"] - est).days) <= 14), None)
+            if g is None:
+                g = {"est": est, "filas": []}
+                lista.append(g)
+            g["filas"].append((v, k, r, pid, metodo))
+    cambios = {}
+    for lista in grupos.values():
+        for g in lista:
+            if any(m == "manual" for *_, m in g["filas"]):
+                continue
+            votos = {}
+            for *_, pid, _ in g["filas"]:
+                if not pid.startswith("x-"):
+                    votos[pid] = votos.get(pid, 0) + 1
+            def cuadra(pid):
+                f = fecha(pid) if fecha else None
+                return None if f is None else abs((f - g["est"]).days) <= 31
+            buenos = [p for p in votos if cuadra(p)] or [p for p in votos if cuadra(p) is None]
+            elegido = max(buenos, key=lambda p: votos[p]) if buenos else None
+            if elegido is None and buscar:
+                v0, _, r0, _, _ = g["filas"][0]
+                elegido = buscar(r0, dt.date.fromisoformat(v0))
+            if elegido is None and votos:
+                # ninguna cuadra: la de fecha más cercana (Drácula de 2025 trae la fecha del estreno
+                # internacional, pero mejor esa que la de 1931); sin fechas, la más repetida
+                fechas = {p: fecha(p) for p in votos} if fecha else {}
+                cerca = sorted((abs((f - g["est"]).days), -votos[p], p) for p, f in fechas.items() if f)
+                elegido = cerca[0][2] if cerca and cerca[0][0] <= 365 else max(votos, key=votos.get)
+            if elegido is None:
+                continue
+            for v, k, _, pid, _ in g["filas"]:
+                if pid != elegido:
+                    cambios[(v, k)] = elegido
+    return cambios
+
+
+def emparejar(semanas, ec_por_fin, candidatos, en_cartelera, buscar=None, fecha=None):
     """Asigna a cada fila del ICAA el id de película de eCartelera.
 
     semanas      {viernes: [filas ICAA]}
     ec_por_fin   {viernes: [filas eCartelera con 'id', 'titulo', 'pos', 'fin_eur', 'espect'...]}
     candidatos   {id: título} de eCartelera (películas con taquilla, sesiones y próximos estrenos)
     en_cartelera {viernes: set(id)} películas con sesiones ese fin de semana (captura de los viernes)
+    buscar       función (fila, viernes) -> id | None que localiza la ficha de eCartelera por el título
+                 (para películas que nunca salieron en el top de eCartelera)
 
     Orden de confianza:
       1. manual: data/icaa_emparejado.csv con metodo=manual.
       2. cifras: el mismo fin de semana en eCartelera con los mismos espectadores y recaudación
-         (ambas fuentes son Rentrak/comScore, así que coinciden). Es el método del histórico.
+         (ambas fuentes son Rentrak/comScore, así que coinciden), o con la misma recaudación y casi
+         el mismo puesto (las páginas antiguas de eCartelera traen mal los espectadores).
       3. continuidad: la película ya estaba emparejada la semana anterior (semana > 1 en el ICAA).
       4. título: artículo pospuesto, tildes y puntuación normalizados; se compara el título en
          español y el original con el título y el identificador de eCartelera. Solo se acepta un
          parecido muy alto y sin otro candidato cercano; en estrenos solo entre películas en cartelera
          ese fin de semana o próximos estrenos.
-      5. sin pareja: id provisional 'x-<título>'. Cuando eCartelera publique ese fin de semana,
+      4b. ficha: se busca la página de la película en eCartelera a partir del título y solo se acepta
+         si su fecha de estreno cuadra con la semana que da el ICAA (películas que venían de 2019,
+         o puestos 11 a 25 de años en que eCartelera solo publicaba el top 10).
+      5. sin pareja: id provisional 'x-<título>'.
+      6. coherencia: todas las semanas de un mismo estreno se quedan con una sola película, la que tenga
+         una ficha con la fecha de estreno que cuadra (ver coherencia()). Cuando eCartelera publique ese fin de semana,
          la siguiente ejecución la empareja por cifras.
     Devuelve ({viernes: [(fila, id, metodo, fila_ec | None)]}, [diferencias entre fuentes]).
     """
@@ -615,14 +705,16 @@ def emparejar(semanas, ec_por_fin, candidatos, en_cartelera):
                     continue
                 for j, e in enumerate(ec):
                     c = _cifras_iguales(r, e)
+                    cerca = abs(r["puesto"] - e["pos"]) <= 2
+                    ce = cerca and _eur_igual(r, e)
                     s = _sim(r, e.get("titulo"), e["id"])
-                    if c or (s >= 0.9 and abs(r["puesto"] - e["pos"]) <= 2):
-                        pares.append((c, s, i, j))
+                    if c or ce or (s >= 0.9 and cerca):
+                        pares.append((c, ce, s, i, j))
             hechos = set()
-            for c, s, i, j in sorted(pares, reverse=True):
+            for c, ce, s, i, j in sorted(pares, reverse=True):
                 if i in asign or j in hechos or ec[j]["id"] in usados:
                     continue
-                asign[i] = (ec[j]["id"], "cifras" if c else "titulo", ec[j])
+                asign[i] = (ec[j]["id"], "cifras" if c or ce else "titulo", ec[j])
                 hechos.add(j)
                 usados.add(ec[j]["id"])
         # 3 y 4. continuidad y título
@@ -656,6 +748,13 @@ def emparejar(semanas, ec_por_fin, candidatos, en_cartelera):
             if puntos and puntos[0][0] >= 0.92 and (len(puntos) == 1 or puntos[1][0] <= puntos[0][0] - 0.04):
                 asign[i] = (puntos[0][1], "titulo", None)
                 usados.add(puntos[0][1])
+                continue
+            # 4b. ficha de eCartelera buscada por el título, validada con la fecha de estreno
+            if buscar:
+                pid = buscar(r, vd)
+                if pid and pid not in usados:
+                    asign[i] = (pid, "ficha", None)
+                    usados.add(pid)
         # 5. sin pareja
         salida = []
         for i, r in enumerate(filas):
@@ -683,6 +782,15 @@ def emparejar(semanas, ec_por_fin, candidatos, en_cartelera):
                         contraste.append({"viernes": v, "pelicula_id": pid, "titulo": r["titulo"], "campo": campo,
                                           "icaa": a, "ecartelera": b})
         resultado[v] = salida
+    # 6. una sola película por estreno (corrige enlaces equivocados de eCartelera y semanas sueltas)
+    for (v, k), pid in sorted(coherencia(resultado, buscar, fecha).items()):
+        r = resultado[v][k][0]
+        resultado[v][k] = (r, pid, "coherencia", None)  # la fila de eCartelera enlazaba otra ficha
+        clave_r = clave_fila(r)
+        previo = mapa.get(clave_r) or {}
+        if previo.get("metodo") != "manual" and v >= (previo.get("ultimo_fin") or ""):
+            mapa[clave_r] = {"clave": clave_r, "titulo_icaa": r["titulo"], "titulo_original": r.get("titulo_original") or "",
+                             "pelicula_id": pid, "metodo": "coherencia", "ultimo_fin": v}
     guardar_emparejado(mapa)
     with open(CONTRASTE, "w", newline="", encoding="utf-8-sig") as fh:
         w = csv.DictWriter(fh, ["viernes", "pelicula_id", "titulo", "campo", "icaa", "ecartelera"], delimiter=";")

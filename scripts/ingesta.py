@@ -228,6 +228,45 @@ def id_peli(fila):
 
 # --------------------------------------------------------------------------- fichas de película
 
+def fecha_ficha(pid):
+    """Fecha de estreno en España según la ficha de eCartelera (la ficha se descarga igualmente después)."""
+    if pid.startswith("x-"):
+        return None
+    t = con_cache(CACHE / "pelis" / f"{pid}.html", f"{BASE}/peliculas/{pid}/", recordar_fallo=True)
+    m = re.search(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})', t or "")
+    return dt.date.fromisoformat(m.group(1)) if m else None
+
+
+_buscadas = {}
+
+
+def buscar_ficha(fila, viernes):
+    """Ficha de eCartelera de una película del ICAA que no salió en el top de eCartelera (venía de 2019,
+    o puesto 11 a 25 cuando eCartelera solo daba el top 10). Se prueban direcciones hechas con el título
+    y se acepta la que tenga un estreno a menos de 3 semanas del que se deduce de la semana del ICAA.
+    Las páginas quedan en la caché, así que cada dirección se pide una sola vez."""
+    semana = fila.get("semana") or 1
+    estreno = viernes - dt.timedelta(days=7 * (semana - 1))
+    clave = (icaa.clave_fila(fila), estreno.isoformat()[:7])
+    if clave in _buscadas:
+        return _buscadas[clave]
+    titulos = icaa.variantes(icaa.articulo_delante(fila["titulo"])) + icaa.variantes(fila.get("titulo_original"))
+    slugs = []
+    for t in titulos:
+        s = slugify(icaa.articulo_delante(t))
+        if len(s) >= 3:
+            slugs += [s, f"{s}-{estreno.year}", f"{s}-{estreno.year - 1}"]
+    encontrado = None
+    for s in list(dict.fromkeys(slugs))[:9]:
+        t = con_cache(CACHE / "pelis" / f"{s}.html", f"{BASE}/peliculas/{s}/", recordar_fallo=True)
+        m = re.search(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})', t or "")
+        if m and abs((dt.date.fromisoformat(m.group(1)) - estreno).days) <= 21:
+            encontrado = s
+            break
+    _buscadas[clave] = encontrado
+    return encontrado
+
+
 def ficha_peli(pid, titulo):
     base = {"id": pid, "titulo": titulo}
     if pid.startswith("x-"):
@@ -655,7 +694,7 @@ def main():
     for slug, titulo, _ in proximos:
         candidatos.setdefault(slug, titulo)
     en_cartelera = {v: set(titulos) for v, titulos in sesiones}
-    emparejado, contraste = icaa.emparejar(semanas_icaa, ec_por_fin, candidatos, en_cartelera)
+    emparejado, contraste = icaa.emparejar(semanas_icaa, ec_por_fin, candidatos, en_cartelera, buscar_ficha, fecha_ficha)
 
     # 2c. una sola tabla: el ICAA manda en los fines de semana que publica; eCartelera cubre el resto
     filas, fuente_fin = [], {}
