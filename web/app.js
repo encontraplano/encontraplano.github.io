@@ -72,6 +72,9 @@
     p.espectTotal = rs.reduce((m, r) => Math.max(m, r[TESP] || 0), 0) || null;
     p.espect = p.espectTotal || p.espectFindes;
     p.porCine = p.apertura_cines ? p.apertura_eur / p.apertura_cines : null;
+    // el acumulado del ICAA en la semana 1 suma los preestrenos y pases previos al primer fin de semana
+    const r1 = rs.find(r => r[SEM] === 1);
+    p.preestrenos = r1 && r1[TOT] && r1[FE] && r1[TOT] - r1[FE] >= 100 ? r1[TOT] - r1[FE] : 0;
     p.aguante = p.caida_2 == null ? null : 100 + p.caida_2;
     p.genero = (p.generos || [])[0] || NADA;
     p.origen = p.espanola ? "España" : ((p.paises || [])[0] || NADA);
@@ -720,6 +723,9 @@
     if (p.completa && p.enCartelera && n >= 1 && p.porCine && p.total_eur) {
       const cands = pelis.filter(q => q.completa && !q.enCartelera && !q.pandemia && q.porCine && q.apertura_cines && q.total_eur && q.i !== p.i)
         .map(q => {
+          // solo películas que se siguieron viendo después de la semana n: si salieron del top 25 en esa
+          // semana, su "total" es solo lo último que se publicó y daría una previsión igual a lo ya recaudado
+          if (Math.max(0, ...porPeli[q.i].map(r => r[SEM] || 0)) <= n) return null;
           const base = totalEnSemana(q, n);
           if (!base || base <= 0 || q.total_eur < base) return null;
           const dist = Math.abs(Math.log(q.porCine / p.porCine)) + 0.5 * Math.abs(Math.log(q.apertura_cines / p.apertura_cines))
@@ -799,11 +805,11 @@
           `Comparada con ${num(n)} estrenos. La raya marca la mediana.${p.enCartelera ? " Sigue en cartelera, así que el total y el multiplicador aún pueden subir." : ""}`}</p>
       </div>
       <dl class="kpis">
-        ${kpi("Total recaudado", eur(p.total_eur), p.enCartelera ? "Sigue en cartelera" : "")}
-        ${prev ? kpi("Previsión final", eur(prev.med), `Entre ${eurCorto(prev.lo)} y ${eurCorto(prev.hi)}`, "destacada") : ""}
+        ${kpi("Total recaudado", eur(p.total_eur), [p.enCartelera ? "Sigue en cartelera" : "", p.preestrenos ? `Incluye ${eurCorto(p.preestrenos)} de preestrenos` : ""].filter(Boolean).join(". "))}
+        ${prev ? kpi("Previsión final", eur(prev.med), eurCorto(prev.lo) === eurCorto(prev.hi) ? `Unos ${eurCorto(prev.med)}` : `Entre ${eurCorto(prev.lo)} y ${eurCorto(prev.hi)}`, "destacada") : ""}
         ${kpi("Primer fin de semana", eur(p.apertura_eur), p.completa ? `${num(p.apertura_espect)} espectadores` : "Antes del histórico")}
         ${kpi("Cines en el estreno", num(p.apertura_cines), p.porCine ? `${eur(p.porCine)} por cine` : "")}
-        ${kpi("Caída 2.º finde", pct(p.caida_2))}
+        ${kpi("Caída 2.º finde", pct(p.caida_2), p.caida_2 == null && p.enCartelera && p.semanas_top25 === 1 ? "Tras su 2.º fin de semana" : "")}
         ${kpi("Multiplicador", mult(p.multiplicador), "Total entre primer finde")}
         ${kpi("Semanas en top 25", num(p.semanas_top25), `Mejor puesto: ${p.mejor_puesto}.º`)}
         ${kpi("Espectadores", num(p.espect), (p.espectTotal ? "Total en cines" : "Fines de semana") + (precio ? `. Entrada a ${dec(precio, 2)} €` : ""))}
@@ -885,13 +891,18 @@
     }
     const pr = c.prensa || [];
     const tot = (pr[2] || 0) + (pr[3] || 0) + (pr[4] || 0);
+    // eCartelera no da media de prensa hasta tener varias críticas: con pocas, se usa la de las citas
+    const conNota = (c.citas || []).filter(q => q[0] != null);
+    const prensa = pr[1] ? [pr[0], `${num(pr[1])} críticas`]
+      : conNota.length ? [conNota.reduce((s, q) => s + q[0], 0) / conNota.length, conNota.length === 1 ? "1 crítica" : `${conNota.length} críticas`]
+      : [null, "Sin críticas"];
     caja.innerHTML = `
       <header class="cab"><h2>Críticas</h2>${p.url ? `<a class="cab-dato" href="${url(p.url)}criticas/" target="_blank" rel="noopener">Todas en eCartelera</a>` : ""}</header>
       <div class="criticas">
         <div>
           <div class="notas">
-            <div class="nota-caja"><span>Nota media</span><b>${dec(c.media)}</b><small>eCartelera</small></div>
-            <div class="nota-caja"><span>Prensa</span><b>${dec(pr[0])}</b><small>${pr[1] ? num(pr[1]) + " críticas" : "Sin críticas"}</small></div>
+            <div class="nota-caja"><span>Nota media</span><b>${dec(c.media)}</b><small>${c.media != null ? "eCartelera" : "Aún sin nota"}</small></div>
+            <div class="nota-caja"><span>Prensa</span><b>${dec(prensa[0])}</b><small>${prensa[1]}</small></div>
             <div class="nota-caja"><span>Público</span><b>${dec(c.usuarios?.[0])}</b><small>${c.usuarios ? num(c.usuarios[1]) + " votos" : "Sin votos"}</small></div>
           </div>
           ${tot ? `<div class="reparto-prensa">
