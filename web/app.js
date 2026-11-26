@@ -76,6 +76,12 @@
     // el acumulado del ICAA en la semana 1 suma los preestrenos y pases previos al primer fin de semana
     const r1 = rs.find(r => r[SEM] === 1);
     p.preestrenos = r1 && r1[TOT] && r1[FE] && r1[TOT] - r1[FE] >= 100 ? r1[TOT] - r1[FE] : 0;
+    // lo recaudado fuera de los fines de semana (lunes a jueves y preestrenos) = total - suma de los fines de
+    // semana. Solo con todas las semanas desde el estreno: si falta alguna, la resta mezclaría fines de semana sin datos
+    const sems = rs.map(r => r[SEM]);
+    p.findesEur = rs.reduce((s, r) => s + (r[FE] || 0), 0);
+    p.entreSemana = sems.length && sems.every((s, k) => s === k + 1) && p.total_eur ? Math.max(0, p.total_eur - p.findesEur) : null;
+    p.cines2 = rs.find(r => r[SEM] === 2)?.[CI] ?? null;
     p.aguante = p.caida_2 == null ? null : 100 + p.caida_2;
     p.genero = (p.generos || [])[0] || NADA;
     p.origen = p.espanola ? "España" : ((p.paises || [])[0] || NADA);
@@ -127,8 +133,9 @@
         const hasta = rs.filter(r => r[F] <= fin);
         if (hasta.length) {
           const ult = hasta[hasta.length - 1];
+          // euros y espectadores totales del ICAA (días laborables incluidos); sin ellos, la suma de los fines de semana
           reparto(Math.max(ult[TOT] || 0, hasta.reduce((s, r) => s + (r[FE] || 0), 0)),
-            hasta.reduce((s, r) => s + (r[ES] || 0), 0), p.espanola, "todo", out);
+            Math.max(ult[TESP] || 0, hasta.reduce((s, r) => s + (r[ES] || 0), 0)), p.espanola, "todo", out);
           hay = true;
         }
       } else {
@@ -417,7 +424,8 @@
     $("leyenda").innerHTML = (vals && !nav.ccaa ?
       `<div>${st.metrica === "eur" ? "Recaudación" : "Espectadores"}${st.periodo === "acum" ? " acumulados" : ""} por comunidad</div>
        <div class="rampa">${rampa.map(c => `<span style="background:${c}"></span>`).join("")}</div>
-       <div class="extremos"><span>0</span><span>${fmt(max)}</span></div>` : "") + `<div id="leyenda-cines"></div>`;
+       <div class="extremos"><span>0</span><span>${fmt(max)}</span></div>
+       ${st.peli >= 0 && pasos().length > 1 ? `<div class="escala">Misma escala en todas sus semanas</div>` : ""}` : "") + `<div id="leyenda-cines"></div>`;
     pintarCines();
 
     const total = vals ? vals.reduce((s, x) => s + x[st.metrica], 0) : null;
@@ -806,11 +814,12 @@
           `Comparada con ${num(n)} estrenos. La raya marca la mediana.${p.enCartelera ? " Sigue en cartelera, así que el total y el multiplicador aún pueden subir." : ""}`}</p>
       </div>
       <dl class="kpis">
-        ${kpi("Total recaudado", eur(p.total_eur), [p.enCartelera ? "Sigue en cartelera" : "", p.preestrenos ? `Incluye ${eurCorto(p.preestrenos)} de preestrenos` : ""].filter(Boolean).join(". "))}
+        ${kpi("Total recaudado", eur(p.total_eur), [p.enCartelera ? "Sigue en cartelera" : "", p.entreSemana == null && p.preestrenos ? `Incluye ${eurCorto(p.preestrenos)} de preestrenos` : ""].filter(Boolean).join(". "))}
         ${prev ? kpi("Previsión final", eur(prev.med), eurCorto(prev.lo) === eurCorto(prev.hi) ? `Unos ${eurCorto(prev.med)}` : `Entre ${eurCorto(prev.lo)} y ${eurCorto(prev.hi)}`, "destacada") : ""}
         ${kpi("Primer fin de semana", eur(p.apertura_eur), p.completa ? `${num(p.apertura_espect)} espectadores` : "Antes del histórico")}
+        ${p.entreSemana != null ? kpi("Fines de semana", eur(p.findesEur), `Más ${eur(p.entreSemana)} entre semana${p.preestrenos ? `, ${eurCorto(p.preestrenos)} de ellos en preestrenos` : ""}`) : ""}
         ${kpi("Cines en el estreno", num(p.apertura_cines), p.porCine ? `${eur(p.porCine)} por cine` : "")}
-        ${kpi("Caída 2.º finde", pct(p.caida_2), p.caida_2 == null && p.enCartelera && p.semanas_top25 === 1 ? "Tras su 2.º fin de semana" : "")}
+        ${kpi("Caída 2.º finde", pct(p.caida_2), p.caida_2 != null && p.cines2 != null && p.apertura_cines ? `De ${num(p.apertura_cines)} a ${num(p.cines2)} cines` : p.caida_2 == null && p.enCartelera && p.semanas_top25 === 1 ? "Tras su 2.º fin de semana" : "")}
         ${kpi("Multiplicador", mult(p.multiplicador), "Total entre primer finde")}
         ${kpi("Semanas en top 25", num(p.semanas_top25), `Mejor puesto: ${p.mejor_puesto}.º`)}
         ${kpi("Espectadores", num(p.espect), (p.espectTotal ? "Total en cines" : "Fines de semana") + (precio ? `. Entrada a ${dec(precio, 2)} €` : ""))}

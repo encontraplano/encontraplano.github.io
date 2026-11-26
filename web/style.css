@@ -208,6 +208,7 @@ main { max-width: 1440px; margin: 0 auto; padding: 20px 24px 40px; }
 .leyenda .rampa { display: flex; gap: 2px; margin: 5px 0 3px; }
 .leyenda .rampa span { width: 22px; height: 8px; border-radius: 2px; }
 .leyenda .extremos { display: flex; justify-content: space-between; gap: 12px; }
+.leyenda .escala { margin-top: 2px; font-size: 11px; color: var(--text-secondary); }
 .leyenda .punto { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--series-2); margin-right: 5px; vertical-align: -1px; }
 #leyenda-cines:not(:empty) { margin-top: 6px; }
 .leyenda > #leyenda-cines:only-child { margin-top: 0; }
