@@ -8519,28 +8519,53 @@
 2026-11-06;fiesta-pagana;Fiesta Pagäna;23;1;34362;4496;79;34362;;4496;ICAA
 2026-11-06;george-michael-the-faith-tour;George Michael: The Faith Tour;24;1;33175;3570;115;33175;;3570;ICAA
 2026-11-06;tadeo-jones-y-la-lampara-maravillosa;Tadeo Jones y la lámpara maravillosa;25;11;25892;3727;64;8139224;;1229137;ICAA
-2026-11-13;scrooge-y-los-fantasmas-de-la-navidad;Scrooge y los fantasmas de la Navidad;1;1;895182;119000;323;895182;;119000;ICAA
-2026-11-13;bola-negra;La bola negra;2;8;675704;83049;344;39729673;;5873200;ICAA
-2026-11-13;el-gato-con-sombrero;El gato con sombrero;3;2;571232;77283;334;1576884;;213694;ICAA
-2026-11-13;ruega-por-nosotras;Ruega por nosotras;4;2;525470;72690;332;1414500;;210433;ICAA
-2026-11-13;wild-horse-nine;Wild Horse Nine;5;1;359279;45409;201;359279;;45409;ICAA
-2026-11-13;como-robar-un-banco;Cómo Robar Un Banco;6;1;287997;38103;293;287997;;38103;ICAA
-2026-11-13;en-el-corazon-de-la-bestia;En el corazón de la bestia;7;8;233738;28900;220;7864602;;1163444;ICAA
-2026-11-13;ratones-al-ataque-operacion-navidad;Ratones al ataque: Operación Navidad;8;1;182258;25708;239;182258;;25708;ICAA
-2026-11-13;wildwood;Wildwood: El bosque salvaje;9;4;154070;20080;192;1389640;;196810;ICAA
-2026-11-13;sacamantecas;Sacamantecas;10;2;111311;15878;180;507708;;77180;ICAA
-2026-11-13;clayface;Clayface;11;4;99706;11863;162;1833727;;260739;ICAA
+2026-11-13;scrooge-y-los-fantasmas-de-la-navidad;Scrooge y los fantasmas de la Navidad;1;1;895182;119000;323;895182;300591;119000;ICAA
+2026-11-13;bola-negra;La bola negra;2;8;675704;83049;344;39729673;387391;5873200;ICAA
+2026-11-13;el-gato-con-sombrero;El gato con sombrero;3;2;571232;77283;334;1576884;69743;213694;ICAA
+2026-11-13;ruega-por-nosotras;Ruega por nosotras;4;2;525470;72690;332;1414500;485132;210433;ICAA
+2026-11-13;wild-horse-nine;Wild Horse Nine;5;1;359279;45409;201;359279;282653;45409;ICAA
+2026-11-13;como-robar-un-banco;Cómo Robar Un Banco;6;1;287997;38103;293;287997;140594;38103;ICAA
+2026-11-13;en-el-corazon-de-la-bestia;En el corazón de la bestia;7;8;233738;28900;220;7864602;85590;1163444;ICAA
+2026-11-13;ratones-al-ataque-operacion-navidad;Ratones al ataque: Operación Navidad;8;1;182258;25708;239;182258;25251;25708;ICAA
+2026-11-13;wildwood;Wildwood: El bosque salvaje;9;4;154070;20080;192;1389640;0;196810;ICAA
+2026-11-13;sacamantecas;Sacamantecas;10;2;111311;15878;180;507708;93040;77180;ICAA
+2026-11-13;clayface;Clayface;11;4;99706;11863;162;1833727;35960;260739;ICAA
 2026-11-13;godzilla-minus-zero;Godzilla Minus Zero;12;2;56399;6609;119;286066;;35854;ICAA
-2026-11-13;karateka;Karateka;13;3;55102;7439;157;710544;;104989;ICAA
-2026-11-13;la-otra-madre;La otra madre;14;6;54962;6789;117;3182031;;482951;ICAA
+2026-11-13;karateka;Karateka;13;3;55102;7439;157;710544;24242;104989;ICAA
+2026-11-13;la-otra-madre;La otra madre;14;6;54962;6789;117;3182031;36390;482951;ICAA
 2026-11-13;hope;Hope;15;3;54262;6953;153;790511;;109487;ICAA
-2026-11-13;sentido-y-sensibilidad-2026;Sentido y sensibilidad;16;4;48116;5854;69;1011961;;145313;ICAA
-2026-11-13;superthings-la-pelicula;Superthings: la película;17;4;47167;7157;147;656825;;94600;ICAA
+2026-11-13;sentido-y-sensibilidad-2026;Sentido y sensibilidad;16;4;48116;5854;69;1011961;11207;145313;ICAA
+2026-11-13;superthings-la-pelicula;Superthings: la película;17;4;47167;7157;147;656825;697;94600;ICAA
 2026-11-13;victorian-psycho;Victorian Psycho;18;1;35780;5046;118;35780;;5046;ICAA
 2026-11-13;the-invite;La invitación;19;5;35011;4105;39;1316060;;231665;ICAA
 2026-11-13;ramayana-el-nacimiento-de-una-leyenda;Ramayana: El nacimiento de una leyenda;20;2;34470;4128;120;215403;;27468;ICAA
-2026-11-13;leones-en-invierno;Leones en invierno;21;4;33483;4711;105;1020065;;161900;ICAA
+2026-11-13;leones-en-invierno;Leones en invierno;21;4;33483;4711;105;1020065;26998;161900;ICAA
 2026-11-13;la-odisea-2024;La Odisea;22;18;28347;2329;19;39587127;;5072718;ICAA
 2026-11-13;resident-evil-2026;Resident Evil;23;9;27868;3311;56;7427308;;1030548;ICAA
 2026-11-13;la-oveja-shaun-el-monstruo-de-mossy-bottom;La oveja Shaun: Misión calabaza;24;3;24061;3491;111;280413;;40159;ICAA
 2026-11-13;me-entiendes-o-te-lo-explico;¿Me entiendes o te lo explico?;25;1;18800;2711;93;22086;;2993;ICAA
+2026-11-20;los-juegos-del-hambre-amanecer-en-la-cosecha;Los Juegos del Hambre: Amanecer en la cosecha;1;1;3722742;453457;350;3722742;;453457;ICAA
+2026-11-20;scrooge-y-los-fantasmas-de-la-navidad;Scrooge y los fantasmas de la Navidad;2;2;546452;70946;318;1742225;;239731;ICAA
+2026-11-20;bola-negra;La bola negra;3;9;421312;50368;321;40538376;;5986695;ICAA
+2026-11-20;el-gato-con-sombrero;El gato con sombrero;4;3;389327;51663;335;2035954;;276770;ICAA
+2026-11-20;ruega-por-nosotras;Ruega por nosotras;5;3;366912;49971;329;2266544;;346449;ICAA
+2026-11-20;el-director;El director;6;1;337700;43840;301;345970;;44970;ICAA
+2026-11-20;wild-horse-nine;Wild Horse Nine;7;2;226612;28272;192;868544;;122437;ICAA
+2026-11-20;el-mal-padre;El mal padre;8;1;168206;23354;196;179780;;25535;ICAA
+2026-11-20;ratones-al-ataque-operacion-navidad;Ratones al ataque: Operación Navidad;9;2;149293;20875;234;356802;;50943;ICAA
+2026-11-20;wildwood;Wildwood: El bosque salvaje;10;5;136550;19840;154;1526190;;216650;ICAA
+2026-11-20;en-el-corazon-de-la-bestia;En el corazón de la bestia;11;9;120955;14788;191;8071147;;1191855;ICAA
+2026-11-20;como-robar-un-banco;Cómo Robar Un Banco;12;2;91791;11922;282;520382;;73597;ICAA
+2026-11-20;rose;Rose;13;1;37423;5429;72;38556;;5630;ICAA
+2026-11-20;sacamantecas;Sacamantecas;14;3;31653;4626;70;632401;;98920;ICAA
+2026-11-20;clayface;Clayface;15;5;26308;3073;80;1895995;;268934;ICAA
+2026-11-20;la-otra-madre;La otra madre;16;7;21898;2673;62;3240319;;490741;ICAA
+2026-11-20;citas-la-pelicula;Citas: la película;17;1;21147;2716;92;21147;;2716;ICAA
+2026-11-20;superthings-la-pelicula;Superthings: la película;18;5;20512;2940;73;678034;;97587;ICAA
+2026-11-20;adolescencia-sexo-y-muerte-en-camp-miasma;Adolescencia, sexo y muerte en Campamento Miasma;19;1;20505;2874;86;29487;;4257;ICAA
+2026-11-20;karateka;Karateka;20;4;14896;2044;46;749682;;111303;ICAA
+2026-11-20;sentido-y-sensibilidad-2026;Sentido y sensibilidad;21;5;13764;1647;26;1036932;;149615;ICAA
+2026-11-20;tadeo-jones-y-la-lampara-maravillosa;Tadeo Jones y la lámpara maravillosa;22;13;11695;1773;27;8180899;;1236204;ICAA
+2026-11-20;ooh-la-la-quien-lo-hubiera-pensado;Ooh La La! ¿Quién lo hubiera pensado?;23;1;12111;1638;63;12111;;1638;ICAA
+2026-11-20;arriba-tutto;Arriba Tutto;24;5;10717;1642;16;780429;;129789;ICAA
+2026-11-20;leones-en-invierno;Leones en invierno;25;5;10610;1550;43;1057673;;168034;ICAA
