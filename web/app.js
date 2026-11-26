@@ -1089,7 +1089,8 @@
   // ================================================================== próximos estrenos (plegable)
   const PROX = (D.proximos || []).map(([i, fecha]) => ({ p: pelis[i], fecha }));
   PROX.forEach(x => { x.p.proximo = x.fecha; });
-  const viernesDe = iso => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() - ((d.getDay() + 2) % 7)); return d.toISOString().slice(0, 10); };
+  // fin de semana de un estreno: sábado y domingo cuentan para el viernes anterior; de lunes a jueves, para el siguiente
+  const viernesDe = iso => { const d = new Date(iso + "T12:00:00"), dia = d.getDay(); d.setDate(d.getDate() + (dia === 6 ? -1 : dia === 0 ? -2 : 5 - dia)); return d.toISOString().slice(0, 10); };
   function pintarProximos() {
     const cont = $("proximos"), boton = $("toggle-proximos");
     $("n-proximos").textContent = PROX.length || "";
