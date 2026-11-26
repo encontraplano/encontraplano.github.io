@@ -48,7 +48,8 @@
   const pelis = D.pelis;
   const porPeli = pelis.map(() => []);
   const porFin = D.fines.map(() => []);
-  D.filas.forEach(r => { porPeli[r[P]].push(r); porFin[r[F]].push(r); });
+  // las semanas de cine español fuera del top 25 (sin puesto) van a la película, no al top del fin de semana
+  D.filas.forEach(r => { porPeli[r[P]].push(r); if (r[POS] != null) porFin[r[F]].push(r); });
   porPeli.forEach(rs => rs.sort((a, b) => a[F] - b[F]));
   porFin.forEach(rs => rs.sort((a, b) => a[POS] - b[POS]));
   const ULT_TAQ = D.filas.reduce((m, r) => Math.max(m, r[F]), 0);  // último finde con taquilla publicada
@@ -976,7 +977,7 @@
         options: {
           ...comunes,
           scales: { ...comunes.scales, x: { ...comunes.scales.x, stacked: true }, y: { ...comunes.scales.y, stacked: true } },
-          plugins: { ...comunes.plugins, tooltip: { ...comunes.plugins.tooltip, callbacks: { title: it => `${it[0].label}, ${fechaFin(rs[it[0].dataIndex][F])}`, label: c => `${c.dataset.label}: ${c.parsed.y == null ? NADA : eur(c.parsed.y)}` } } },
+          plugins: { ...comunes.plugins, tooltip: { ...comunes.plugins.tooltip, callbacks: { title: it => `${it[0].label}, ${fechaFin(rs[it[0].dataIndex][F])}`, footer: it => rs[it[0].dataIndex][POS] == null ? "Fuera del top 25 (ICAA, cine español)" : `Puesto ${rs[it[0].dataIndex][POS]}`, label: c => `${c.dataset.label}: ${c.parsed.y == null ? NADA : eur(c.parsed.y)}` } } },
         },
       });
     }

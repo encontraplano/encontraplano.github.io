@@ -47,11 +47,16 @@ ESTADO = RAIZ / "data" / "icaa_pdfs.json"
 EMPAREJADO = RAIZ / "data" / "icaa_emparejado.csv"
 CONTRASTE = RAIZ / "data" / "contraste_fuentes.csv"
 VERSION_LECTOR = 2  # súbelo si cambia la lectura de los PDF: se vuelven a procesar todos
+# «Cine español en cartelera»: todas las películas españolas del fin de semana, también fuera del top 25
+ESP_SEMANAL = RAIZ / "data" / "icaa_espanol.csv"
+ESP_ESTADO = RAIZ / "data" / "icaa_espanol_pdfs.json"
+VERSION_LECTOR_ESP = 1
 
 MES3 = {"ene": 1, "feb": 2, "mar": 3, "abr": 4, "may": 5, "jun": 6, "jul": 7, "ago": 8,
         "sep": 9, "set": 9, "oct": 10, "nov": 11, "dic": 12}
 CAMPOS = ["viernes", "puesto", "titulo", "titulo_original", "distribuidora", "semana", "cines",
           "recaudacion_eur", "espectadores", "acumulado_eur", "acumulado_espectadores", "url"]
+CAMPOS_ESP = [c for c in CAMPOS if c != "titulo_original"]
 
 
 # --------------------------------------------------------------------------- títulos
@@ -414,6 +419,130 @@ def _validar(r):
     return None
 
 
+# Columnas numéricas del PDF de cine español, en orden (los «+/-%» se descartan al leer). El formato ha cambiado:
+#   11 valores: semana, cines, pantallas, recaudación, media por cine y por pantalla, espectadores,
+#               espectadores por cine y por pantalla, acumulado en euros y en espectadores (2020 a 2026).
+#   10 valores: lo mismo sin la columna de pantallas, que sigue en las medias (junio de 2026).
+#    8 valores: sin pantallas (desde junio de 2026), o el formato del 20-22 de noviembre de 2026, con la misma
+#               cabecera pero sin espectadores por cine y con una columna final sin sentido. Se elige el que
+#               da acumulados coherentes (nunca menores que el fin de semana).
+# La validación (suma igual al total y mismas cifras que el top 25) avisa si cambia otra vez.
+_C = ("semana", "cines", "recaudacion_eur", "espectadores", "acumulado_eur", "acumulado_espectadores")
+_COLS_ESP = {
+    11: [dict(zip(_C, (0, 1, 3, 6, 9, 10)))],
+    10: [dict(zip(_C, (0, 1, 2, 5, 8, 9)))],
+    8: [dict(zip(_C, (0, 1, 2, 4, 6, 7))), dict(zip(_C, (0, 1, 2, 4, 5, 6)))],
+}
+
+
+def _valores(palabras):
+    """Tokens numéricos de una fila -> [(valor, lleva_€)], sin los porcentajes."""
+    out = []
+    for w in palabras:
+        t = w["text"].replace("−", "-").strip()
+        if t == "€":
+            if out:
+                out[-1] = (out[-1][0], True)
+        elif "%" in t:
+            continue
+        elif t in ("-", "–", "—"):
+            out.append((None, False))
+        elif _NUM.match(t.rstrip("€").strip()):
+            out.append((_entero(t), t.endswith("€")))
+    return out
+
+
+def _coherente(fila):
+    fin, acum = fila["recaudacion_eur"], fila["acumulado_eur"]
+    esp, acum_esp = fila["espectadores"], fila["acumulado_espectadores"]
+    return None not in (fin, acum, esp, acum_esp) and acum >= fin and acum_esp >= esp
+
+
+def leer_pdf_espanol(pdf_bytes):
+    """PDF «Cine español en cartelera»: mismo formato de salida que leer_pdf()."""
+    lineas = _lineas(pdf_bytes)
+    texto = "\n".join(" ".join(w["text"] for w in l) for l in lineas)
+    out = {"fecha": _fecha_pie(texto), "filas": [], "total": None, "error": None, "es_top25": True, "avisos": []}
+    cab, x_sem = {}, None
+    for l in lineas:
+        nl = [normalizar(w["text"]) for w in l]
+        if "titulo" not in nl or "cines" not in nl:
+            continue
+        for w, t in zip(l, nl):
+            if t == "titulo":
+                cab["titulos"] = [w["x0"]]
+            elif t.startswith("distribuidor"):
+                cab["distribuidora"] = w["x0"]
+            elif t.startswith("sem") and x_sem is None:
+                x_sem = w["x0"]
+        break
+    if x_sem is None:
+        out["error"] = "sin cabecera"
+        return out
+    corte = x_sem - 8  # a la izquierda, texto; a la derecha, cifras
+    crudas, raras = [], 0
+    for l in lineas:
+        numeros = [w for w in l if w["x0"] >= corte]
+        if not any("€" in w["text"] for w in numeros):
+            continue
+        vals = _valores(numeros)
+        primero = l[0]["text"].strip()
+        if l[0]["x0"] >= corte:  # fila de totales: no tiene puesto ni título
+            eur = [v for v, e in vals if e]
+            if eur:
+                out["total"] = {"fin_eur": eur[0], "espect": None}
+            continue
+        if not re.fullmatch(r"\d{1,3}", primero):
+            continue
+        if len(vals) not in _COLS_ESP:
+            con_eur = [i for i, (_, e) in enumerate(vals) if e]
+            if len(con_eur) >= 2 and vals[con_eur[0]][0]:
+                raras += 1  # tiene recaudación del fin de semana y no se sabe leer
+            continue  # 0 € o sin recaudación ese fin de semana (celdas vacías): no cuenta
+        crudas.append((int(primero), [w for w in l[1:] if w["x0"] < corte], vals))
+    # el formato de cada número de columnas que da acumulados coherentes en más filas
+    eleccion = {}
+    for n, opciones in _COLS_ESP.items():
+        filas_n = [vals for _, _, vals in crudas if len(vals) == n]
+        if filas_n:
+            eleccion[n] = max(opciones, key=lambda cols: sum(
+                _coherente({k: vals[i][0] for k, i in cols.items()}) for vals in filas_n))
+    for puesto, texto_fila, vals in crudas:
+        fila = {"puesto": puesto, "texto": texto_fila}
+        fila.update({k: vals[i][0] for k, i in eleccion[len(vals)].items()})
+        out["filas"].append(fila)
+    _repartir_texto(out["filas"], cab)
+    for f in out["filas"]:
+        f.pop("texto")
+        f.pop("titulo_original", None)
+    out["raras"] = raras
+    if not raras:
+        out["avisos"] = _corregir_filas(out)
+    out["error"] = _validar_espanol(out)
+    return out
+
+
+def _validar_espanol(r):
+    filas = r["filas"]
+    if r.get("raras"):
+        return f"{r['raras']} filas con columnas desconocidas"
+    if r["fecha"] is None:
+        return "sin fecha"
+    if len(filas) < 3:
+        return f"solo {len(filas)} filas"
+    puestos = [f["puesto"] for f in filas]
+    if puestos[0] != 1 or any(b < a for a, b in zip(puestos, puestos[1:])):
+        return "puestos desordenados"  # hay empates (mismo puesto) y filas de 0 € que se saltan
+    if any(not f["titulo"] or f["recaudacion_eur"] is None for f in filas):
+        return "filas incompletas"
+    if not r["total"]:
+        return "sin fila de totales"
+    suma = sum(f["recaudacion_eur"] for f in filas)
+    if abs(suma - r["total"]["fin_eur"]) > max(5, 0.002 * r["total"]["fin_eur"]):
+        return f"la suma ({suma}) no cuadra con el total ({r['total']['fin_eur']})"
+    return None
+
+
 # --------------------------------------------------------------------------- listado y descarga
 
 def limpiar(s):
@@ -421,8 +550,14 @@ def limpiar(s):
     return re.sub(r"\s+", " ", html.unescape(s)).strip()
 
 
-def listar_pdfs(descargar):
-    t = descargar(PAGINA)
+_PAGINA_LEIDA = {}
+
+
+def listar_pdfs(descargar, tipo="top25"):
+    """PDF semanales de la página del ICAA. tipo: "top25" o "espanol" (cine español en cartelera)."""
+    if PAGINA not in _PAGINA_LEIDA:  # una sola descarga de la página por ejecución
+        _PAGINA_LEIDA[PAGINA] = descargar(PAGINA)
+    t = _PAGINA_LEIDA[PAGINA]
     if not t:
         return []
     anios = [(m.start(), int(m.group(1)))
@@ -431,10 +566,12 @@ def listar_pdfs(descargar):
     for orden, m in enumerate(re.finditer(r'<a\b[^>]*href="([^"]+?\.pdf)"[^>]*>(.*?)</a>', t, flags=re.S | re.I)):
         href, texto = html.unescape(m.group(1)), limpiar(m.group(2))
         nombre = href.rsplit("/", 1)[-1].lower()
-        if not (re.match(r"top-?25", nombre) or re.match(r"top\s*25", texto, re.I)):
-            continue
-        if nombre.startswith("topesp"):  # «Cine español en cartelera» enlazado por error como top 25
-            continue
+        espanol = nombre.startswith("topesp")  # topespanol-..., a veces «topespaniol»
+        if tipo == "espanol":
+            if not espanol:
+                continue
+        elif espanol or not (re.match(r"top-?25", nombre) or re.match(r"top\s*25", texto, re.I)):
+            continue  # el de cine español a veces va enlazado con el texto «top 25»
         url = urljoin(PAGINA, href)
         if url in vistos:
             continue
@@ -452,25 +589,36 @@ def _version(nombre):
     return int(m.group(1)) if m else 1
 
 
-def actualizar(descargar, desde, hoy):
+_TIPOS = {
+    "top25": {"estado": ESTADO, "csv": SEMANAL, "campos": CAMPOS, "version": VERSION_LECTOR,
+              "leer": lambda b: leer_pdf(b), "validar": lambda r: _validar(r), "nombre": "ICAA"},
+    "espanol": {"estado": ESP_ESTADO, "csv": ESP_SEMANAL, "campos": CAMPOS_ESP, "version": VERSION_LECTOR_ESP,
+                "leer": lambda b: leer_pdf_espanol(b), "validar": lambda r: _validar_espanol(r),
+                "nombre": "ICAA cine español"},
+}
+
+
+def actualizar(descargar, desde, hoy, tipo="top25"):
     """Descarga y lee los PDF nuevos. Devuelve {viernes_iso: [filas]} solo con fines de semana válidos."""
+    cfg = _TIPOS[tipo]
+    ruta_estado, nombre = cfg["estado"], cfg["nombre"]
     try:
         import pdfplumber  # noqa: F401
     except ImportError:
-        print("  ! ICAA: falta pdfplumber (pip install pdfplumber). Se sigue solo con eCartelera.")
-        return cargar_csv()
-    estado = json.loads(ESTADO.read_text(encoding="utf-8")) if ESTADO.exists() else {}
-    if estado.get("_version") != VERSION_LECTOR:
-        estado = {"_version": VERSION_LECTOR}
-    semanas = cargar_csv() if len(estado) > 1 else {}
-    pdfs = listar_pdfs(descargar)
+        print(f"  ! {nombre}: falta pdfplumber (pip install pdfplumber). Se usa lo ya guardado.")
+        return cargar_csv(tipo)
+    estado = json.loads(ruta_estado.read_text(encoding="utf-8")) if ruta_estado.exists() else {}
+    if estado.get("_version") != cfg["version"]:
+        estado = {"_version": cfg["version"]}
+    semanas = cargar_csv(tipo) if len(estado) > 1 else {}
+    pdfs = listar_pdfs(descargar, tipo)
     if not pdfs:
-        print("  ! ICAA: no se pudo leer la página de taquilla; se usa lo ya guardado.")
+        print(f"  ! {nombre}: no se pudo leer la página de taquilla; se usa lo ya guardado.")
         return semanas
     orden = {p["url"]: p["orden"] for p in pdfs}
     nuevos = [p for p in pdfs if p["url"] not in estado]
     if nuevos:
-        print(f"ICAA: {len(nuevos)} PDF sin procesar de {len(pdfs)}")
+        print(f"{nombre}: {len(nuevos)} PDF sin procesar de {len(pdfs)}")
     for p in nuevos:
         fecha_enlace = _fecha_enlace(p["texto"], p["nombre"], p["anio"])
         if fecha_enlace and fecha_enlace[0].year < desde:
@@ -482,31 +630,32 @@ def actualizar(descargar, desde, hoy):
         else:
             datos = descargar(p["url"], binario=True)
             if not datos or not datos.startswith(b"%PDF"):
-                print(f"  ! ICAA: no se pudo descargar {p['nombre']}")
+                print(f"  ! {nombre}: no se pudo descargar {p['nombre']}")
                 continue  # sin estado: se reintenta en la siguiente ejecución
             ruta.parent.mkdir(parents=True, exist_ok=True)
             ruta.write_bytes(datos)
         try:
-            r = leer_pdf(datos)
+            r = cfg["leer"](datos)
         except Exception as ex:  # PDF raro: se apunta y se sigue
             r = {"fecha": None, "filas": [], "total": None, "es_top25": True, "error": f"no se pudo leer: {ex}"}
-        if r["fecha"] is None and fecha_enlace and r["filas"]:
-            r["fecha"] = fecha_enlace  # el pie no trae fecha legible: se usa la del enlace
-            r["error"] = _validar(r)
+        if r["filas"] and fecha_enlace and (r["fecha"] is None or (
+                r["fecha"][1].year != fecha_enlace[1].year and r["fecha"][1].replace(year=2000) == fecha_enlace[1].replace(year=2000))):
+            # el pie no trae fecha legible, o trae el año del PDF de la misma semana del año anterior: manda el enlace
+            r["fecha"] = fecha_enlace
+            r["error"] = cfg["validar"](r)
         v = r["fecha"][0].isoformat() if r["fecha"] else None
         estado[p["url"]] = {"viernes": v, "archivo": p["nombre"], "filas": len(r["filas"]), "error": r["error"]}
         if r.get("avisos") and not r["error"]:
             estado[p["url"]]["avisos"] = r["avisos"]
-            print(f"  · ICAA {p['nombre']}: " + "; ".join(r["avisos"]))
+            print(f"  · {nombre} {p['nombre']}: " + "; ".join(r["avisos"]))
         if r["error"]:
-            print(f"  ! ICAA {p['nombre']}: {r['error']} (no se usa)")
+            print(f"  ! {nombre} {p['nombre']}: {r['error']} (no se usa)")
             continue
         if fecha_enlace and fecha_enlace[0] != r["fecha"][0]:
-            print(f"  · ICAA {p['nombre']}: el enlace dice {fecha_enlace[0]} y el PDF {r['fecha'][0]}; manda el PDF")
+            print(f"  · {nombre} {p['nombre']}: el enlace dice {fecha_enlace[0]} y el PDF {r['fecha'][0]}; manda el PDF")
         semanas.setdefault(v, [])
-        semanas[v] = [f for f in semanas[v] if f["url"] != p["url"]] + \
-            [dict(f, viernes=v, url=p["url"]) for f in r["filas"]]
-        print(f"  + ICAA {v}  {len(r['filas'])} películas")
+        semanas[v] = [f for f in semanas[v] if f["url"] != p["url"]] +             [dict(f, viernes=v, url=p["url"]) for f in r["filas"]]
+        print(f"  + {nombre} {v}  {len(r['filas'])} películas")
 
     # un PDF por fin de semana: el de versión más alta (-v2...) y, a igualdad, el que va antes en la página
     elegido = {}
@@ -519,16 +668,17 @@ def actualizar(descargar, desde, hoy):
     semanas = {v: [f for f in fs if f["url"] == elegido[v][1]] for v, fs in semanas.items()
                if v >= f"{desde}-01-01" and v in elegido}
     semanas = {v: fs for v, fs in semanas.items() if fs}
-    guardar_csv(semanas)
-    ESTADO.write_text(json.dumps(estado, ensure_ascii=False, indent=1, sort_keys=True), encoding="utf-8")
+    guardar_csv(semanas, tipo)
+    ruta_estado.write_text(json.dumps(estado, ensure_ascii=False, indent=1, sort_keys=True), encoding="utf-8")
     return semanas
 
 
-def cargar_csv():
+def cargar_csv(tipo="top25"):
     semanas = {}
-    if not SEMANAL.exists():
+    ruta = _TIPOS[tipo]["csv"]
+    if not ruta.exists():
         return semanas
-    with open(SEMANAL, encoding="utf-8-sig") as fh:
+    with open(ruta, encoding="utf-8-sig") as fh:
         for r in csv.DictReader(fh, delimiter=";"):
             for k in ("puesto", "semana", "cines", "recaudacion_eur", "espectadores", "acumulado_eur",
                       "acumulado_espectadores"):
@@ -537,10 +687,11 @@ def cargar_csv():
     return semanas
 
 
-def guardar_csv(semanas):
-    SEMANAL.parent.mkdir(parents=True, exist_ok=True)
-    with open(SEMANAL, "w", newline="", encoding="utf-8-sig") as fh:
-        w = csv.DictWriter(fh, CAMPOS, delimiter=";", extrasaction="ignore")
+def guardar_csv(semanas, tipo="top25"):
+    cfg = _TIPOS[tipo]
+    cfg["csv"].parent.mkdir(parents=True, exist_ok=True)
+    with open(cfg["csv"], "w", newline="", encoding="utf-8-sig") as fh:
+        w = csv.DictWriter(fh, cfg["campos"], delimiter=";", extrasaction="ignore")
         w.writeheader()
         for v in sorted(semanas):
             for f in sorted(semanas[v], key=lambda f: f["puesto"]):
@@ -797,6 +948,107 @@ def emparejar(semanas, ec_por_fin, candidatos, en_cartelera, buscar=None, fecha=
         w.writeheader()
         w.writerows(contraste)
     return resultado, contraste
+
+
+# --------------------------------------------------------------------------- cine español fuera del top 25
+
+def _claves_esp(*titulos):
+    """Como _claves(), sin el año suelto de «Tintín y el misterio de las naranjas azules (1964) (re)»."""
+    return tuple(k for k in _claves(*titulos) if not re.fullmatch(r"(19|20)\d\d", k))
+
+
+def contrastar_espanol(espanol, top25):
+    """Fines de semana del PDF de cine español que cuadran con el top 25 del mismo fin de semana: las películas
+    españolas del top 25 tienen que traer la misma recaudación en los dos PDF. Así se descartan PDF con la
+    fecha equivocada o leídos mal. Sin top 25 del ICAA con el que comparar, el fin de semana no se usa."""
+    validos, rechazados = {}, []
+    for v, filas in sorted(espanol.items()):
+        if v not in top25:
+            continue
+        por_clave = {}
+        for t in top25[v]:
+            for k in _claves_esp(t["titulo"]):
+                por_clave.setdefault(k, []).append(t)
+        eur_top = {t["recaudacion_eur"] for t in top25[v]}
+        distintas = 0
+        for f in filas:
+            ts = [t for k in _claves_esp(f["titulo"]) for t in por_clave.get(k, ())]
+            if not ts:
+                continue
+            # los dos PDF difieren a veces unos pocos euros o un 2-3 % (correcciones de la fuente); lo que se busca
+            # son columnas mal leídas o un PDF de otra semana, que dan cifras muy distintas
+            igual = [t for t in ts if abs(f["recaudacion_eur"] - t["recaudacion_eur"]) <= max(2, 0.05 * t["recaudacion_eur"])]
+            if igual:  # misma película: el acumulado también tiene que parecerse
+                a, b = f["acumulado_eur"], igual[0]["acumulado_eur"]
+                if a is not None and b is not None and abs(a - b) > max(2, 0.1 * b):
+                    distintas += 1
+            elif f["recaudacion_eur"] not in eur_top:
+                distintas += 1
+        if distintas:
+            rechazados.append(f"{v} ({distintas} cifras distintas del top 25)")
+            continue
+        validos[v] = filas
+    if rechazados:
+        print(f"  ! ICAA cine español: no cuadran con el top 25 y no se usan: {', '.join(rechazados)}")
+    return validos
+
+
+def emparejar_espanol(espanol, top25, filas):
+    """Filas de cine español fuera del top 25 de películas que ya tienen alguna semana en el top 25.
+
+    espanol {viernes: [filas del PDF de cine español]} (ya contrastadas)
+    top25   {viernes: [filas del top 25 del ICAA]}
+    filas   filas de la web ya emparejadas ({"viernes", "id", "titulo", "semana", ...})
+
+    Una película del top 25 se reconoce por el título (el de eCartelera o los del ICAA) y por la fecha de
+    estreno que se deduce de la semana: tiene que estar a menos de 3 semanas. Las películas españolas que
+    nunca entraron en el top 25 no se añaden: no tienen ficha y alterarían las comparaciones entre estrenos.
+    Devuelve {viernes: [(fila, id)]}."""
+    titulos, estreno, ocupado = {}, {}, set()
+    for d in filas:
+        pid = d["id"]
+        if pid.startswith("x-"):
+            continue
+        ocupado.add((d["viernes"], pid))
+        titulos.setdefault(pid, set()).update(t for t in (d["titulo"], *d.get("titulos_icaa", ())) if t)
+        if d.get("semana"):
+            est = estreno_deducido(d, dt.date.fromisoformat(d["viernes"]))
+            estreno[pid] = min(estreno.get(pid, est), est)
+    claves = {pid: _claves_esp(*ts) for pid, ts in titulos.items()}
+    por_clave = {}
+    for pid, ks in claves.items():
+        for k in ks:
+            por_clave.setdefault(k, set()).add(pid)
+    salida, cuenta = {}, 0
+    for v, fs in sorted(espanol.items()):
+        vd = dt.date.fromisoformat(v)
+        eur_top = {t["recaudacion_eur"] for t in top25.get(v, [])}
+        claves_top = {k for t in top25.get(v, []) for k in _claves_esp(t["titulo"])}
+        usados = set()
+        for f in fs:
+            if f["recaudacion_eur"] in eur_top or any(k in claves_top for k in _claves_esp(f["titulo"])):
+                continue  # ya está en el top 25 de ese fin de semana
+            est = estreno_deducido(f, vd)
+            cerca = lambda pid: pid in estreno and abs((estreno[pid] - est).days) <= 20  # noqa: E731
+            exactas = {pid for k in _claves_esp(f["titulo"]) for pid in por_clave.get(k, ()) if cerca(pid)}
+            if len(exactas) == 1:
+                pid = exactas.pop()
+            elif exactas:
+                continue  # dos películas con el mismo título y la misma fecha: mejor no adivinar
+            else:
+                puntos = sorted(((max((parecido(a, b) for a in _claves_esp(f["titulo"]) for b in claves[pid]), default=0), pid)
+                                 for pid in estreno if cerca(pid)), reverse=True)
+                if not puntos or puntos[0][0] < 0.92 or (len(puntos) > 1 and puntos[1][0] > puntos[0][0] - 0.04):
+                    continue
+                pid = puntos[0][1]
+            if (v, pid) in ocupado or pid in usados:
+                continue
+            usados.add(pid)
+            salida.setdefault(v, []).append((f, pid))
+            cuenta += 1
+    if cuenta:
+        print(f"ICAA cine español: {cuenta} semanas fuera del top 25 de {len({p for xs in salida.values() for _, p in xs})} películas")
+    return salida
 
 
 # --------------------------------------------------------------------------- comprobación para el calendario

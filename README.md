@@ -85,6 +85,7 @@ Un push a `main` solo republica la web, salvo que el mensaje del commit lleve `[
 |---|---|---|
 | Recaudación, espectadores, cines, acumulado en euros y en espectadores, distribuidora | ICAA, top 25 semanal en PDF (datos de Rentrak), desde 2020 | película × fin de semana (top 25) |
 | Lo mismo para fines de semana que el ICAA no tenga | eCartelera (datos comScore) | película × fin de semana (top 25) |
+| Semanas fuera del top 25 de películas españolas que entraron en él | ICAA, cine español en cartelera (PDF semanal), desde 2020 | película española × fin de semana |
 | Ficha: país, género, director, distribuidora, presupuesto | eCartelera | película |
 | Críticas: nota media, prensa (positivas, mixtas, negativas y citas), público | eCartelera, página de críticas | película |
 | Sesiones, precio, cadena y ubicación de cada cine | eCartelera, ficha de cine | cine × película × día (vie, sáb, dom) |
@@ -94,6 +95,7 @@ Un push a `main` solo republica la web, salvo que el mensaje del commit lleve `[
 
 - **Real:** las cifras nacionales por película y fin de semana.
 - **ICAA y eCartelera:** las dos publican los mismos datos de Rentrak/comScore. El ICAA sale antes (el jueves) y trae los acumulados exactos, los cines de las 25 películas y los espectadores totales; eCartelera redondea los acumulados por encima de 1 M€ y solo da los cines del top 10. Por eso, cuando un fin de semana está en las dos, manda el ICAA. Cada PDF se valida (puestos seguidos y suma igual a la fila TOTAL); si no cuadra, ese fin de semana se queda con eCartelera. Las diferencias entre ambas se guardan en `data/contraste_fuentes.csv`.
+- **Cine español fuera del top 25:** el ICAA publica cada jueves, junto al top 25, la lista de todas las películas españolas en cartelera. De ella se toman solo las semanas que faltan de películas que alguna vez estuvieron en el top 25, para que su ficha muestre la carrera completa (recaudación, caída, total). Esas filas no tienen puesto y no cuentan para el top ni para el total del fin de semana. Cada PDF se valida (suma igual a la fila de totales) y se contrasta con el top 25: las películas españolas que están en los dos tienen que traer la misma recaudación. Las españolas que nunca entraron en el top 25 no se añaden.
 - **Emparejado de títulos:** el ICAA escribe el artículo al final («Bola negra, La») y a menudo sin tildes. Cada título se empareja con su película de eCartelera, por este orden: corrección manual, mismas cifras el mismo fin de semana, continuidad con la semana anterior y, para los estrenos, parecido de título (en español u original) solo entre las películas en cartelera ese fin de semana. Lo que no se puede emparejar con seguridad entra con un id provisional y se corrige solo cuando eCartelera publica ese fin de semana. Para forzar una pareja, edita `data/icaa_emparejado.csv` y pon `manual` en la columna `metodo`.
 - **Pandemia:** las películas cuya carrera cae entre marzo de 2020 y junio de 2021 (cines cerrados o con aforo limitado) se ven en la web, pero no se usan para comparar ni para prever.
 - **Estimado:** comunidad, provincia, cine y cadena. La taquilla nacional se reparte con el peso de cada comunidad y, dentro de ella, con las sesiones × el precio de cada cine.
@@ -110,6 +112,7 @@ Un push a `main` solo republica la web, salvo que el mensaje del commit lleve `[
 - `.github/workflows/actualizar.yml`: actualización y publicación en GitHub.
 - `data/peliculas.csv` y `data/taquilla_fines_de_semana.csv`: los datos para Excel (separador `;`). La columna `fuente` dice de dónde sale cada fila.
 - `data/icaa_top25.csv`: el top 25 del ICAA tal como viene en los PDF. `data/icaa_pdfs.json`: qué PDF se ha leído y por qué se ha descartado alguno.
+- `data/icaa_espanol.csv` y `data/icaa_espanol_pdfs.json`: lo mismo para la lista de cine español en cartelera.
 - `data/icaa_emparejado.csv`: título del ICAA → película. `data/contraste_fuentes.csv`: diferencias entre ICAA y eCartelera.
 - `data/cache/`: HTML ya descargado. No se sube a GitHub.
 - `web/`: la web.

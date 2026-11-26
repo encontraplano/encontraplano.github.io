@@ -718,10 +718,25 @@ def main():
                     "fin_eur": r["recaudacion_eur"], "espect": r["espectadores"],
                     "total_eur": r["acumulado_eur"] if r["acumulado_eur"] is not None else (e or {}).get("total_eur"),
                     "total_espect": r["acumulado_espectadores"], "distribuidora_icaa": r["distribuidora"],
+                    "titulos_icaa": (r["titulo"], r.get("titulo_original") or ""),
                     "fuente": "ICAA", "emparejado": metodo})
         else:
             fuente_fin[v] = "eCartelera"
             filas.extend(ec_por_fin[v])
+
+    # 2d. ICAA, cine español en cartelera: las semanas fuera del top 25 de películas que sí entraron en él
+    # (sin puesto: no cuentan para el top ni para el total del fin de semana)
+    espanol = icaa.contrastar_espanol(icaa.actualizar(descargar, args.desde, hoy, tipo="espanol"), semanas_icaa)
+    una_fila = {d["id"]: d for d in filas}
+    for v, pares in icaa.emparejar_espanol(espanol, semanas_icaa, filas).items():
+        for r, pid in pares:
+            previa = una_fila[pid]
+            filas.append({
+                "viernes": v, "id": pid, "pos": None, "titulo": previa["titulo"], "url": previa.get("url"),
+                "semana": r["semana"] or 0, "cines": r["cines"], "fin_eur": r["recaudacion_eur"],
+                "espect": r["espectadores"], "total_eur": r["acumulado_eur"],
+                "total_espect": r["acumulado_espectadores"], "distribuidora_icaa": r["distribuidora"],
+                "fuente": "ICAA cine español", "emparejado": "cine español"})
     metodos = {}
     for v in emparejado:
         for _, _, metodo, _ in emparejado[v]:
@@ -774,9 +789,10 @@ def main():
         p["apertura_cines"] = primera["cines"]
         p["total_eur"] = max((d["total_eur"] or 0) for d in ds)
         p["total_espect"] = max((d.get("total_espect") or 0) for d in ds) or None
-        p["semanas_top25"] = len(ds)
+        en_top = [d for d in ds if d["pos"] is not None]  # las semanas de cine español fuera del top 25 no tienen puesto
+        p["semanas_top25"] = len(en_top)
         p["max_cines"] = max((d["cines"] or 0) for d in ds) or None
-        p["mejor_puesto"] = min(d["pos"] for d in ds)
+        p["mejor_puesto"] = min(d["pos"] for d in en_top)
         segunda = next((d for d in ds if d["semana"] == 2), None)
         p["caida_2"] = round(100 * (segunda["fin_eur"] / primera["fin_eur"] - 1), 1) \
             if p["completa"] and segunda and primera["fin_eur"] else None
@@ -853,7 +869,7 @@ def main():
         w.writerow(["viernes", "pelicula_id", "titulo", "puesto", "semana", "recaudacion_finde_eur",
                     "espectadores_finde", "cines", "total_acumulado_eur", "entre_semana_siguiente_eur",
                     "total_acumulado_espectadores", "fuente"])
-        for d in sorted(filas, key=lambda d: (d["viernes"], d["pos"])):
+        for d in sorted(filas, key=lambda d: (d["viernes"], d["pos"] or 999)):
             w.writerow([d["viernes"], d["id"], d["titulo"], d["pos"], d["semana"], d["fin_eur"],
                         d["espect"], d["cines"], d["total_eur"], d.get("entre_semana"), d.get("total_espect"),
                         d.get("fuente")])
